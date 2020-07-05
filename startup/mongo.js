@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 
 module.exports = function () {
     return mongoose
-        .connect("mongodb://localhost:27017/playground", {
+        .connect(`mongodb://${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_DATABASE}`, {
             useNewUrlParser: true,
             useUnifiedTopology: true,
         })
