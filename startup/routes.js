@@ -9,4 +9,5 @@ module.exports = function (app) {
     app.use("/api/user", userRoutes);
     app.use("/api/auth", authRoutes);
     app.use(error);
+    app.use("/images", express.static('storage/public'));
 }
