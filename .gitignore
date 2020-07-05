@@ -5,3 +5,5 @@ build
 npm-debug.log
 .env
 .DS_Store
+logfile.log
+uncaughtExceptions.log
