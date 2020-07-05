@@ -1,3 +1,5 @@
+storage/public/profile
+
 node_modules
 build
 npm-debug.log
