@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
-const config = require("config");
 const jwt = require("jsonwebtoken");
+const { boolean } = require("joi");
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -15,17 +15,47 @@ const userSchema = new mongoose.Schema({
     unique: true,
     minlength: 8,
   },
+  authProvider: {
+    type: String,
+    default: "app"
+  },
   password: {
     type: String,
-    required: true,
+    required: function () { return this.authProvider != "facebook" },
   },
-  isAdmin: {
-    type:Boolean,
-  }
+  userRole: {
+    isAdmin: {
+      type: Boolean,
+      default: false
+    },
+    isConductor: {
+      type: Boolean,
+      default: false
+    }
+  },
+  image: {
+    type: String,
+  },
+}, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } });
+
+userSchema.pre('save', function (next) {
+  let { isAdmin, isConductor } = this.userRole;
+  if (this.image) return next();
+  if (isAdmin) this.image = "https://www.kindpng.com/picc/m/368-3685978_admin-icon-gray-hd-png-download.png";
+  if (isConductor) this.image = "https://cdn0.iconfinder.com/data/icons/transport-111/66/20-512.png";
+  if (!isAdmin && !isConductor) this.image = "https://cdn.icon-icons.com/icons2/1378/PNG/512/avatardefault_92824.png";
+  return next();
 });
 
 userSchema.methods.generateAuthToken = function () {
-  const token = jwt.sign({ id: this._id ,isAdmin:this.isAdmin}, config.get("jwtPrivateKey"));
+  const { _id, userRole, name, email, image } = this;
+  const token = jwt.sign({
+    id: _id,
+    isAdmin: userRole.isAdmin,
+    name,
+    email,
+    image
+  }, process.env.JWT_PRIVATE_KEY);
   return token;
 };
 
