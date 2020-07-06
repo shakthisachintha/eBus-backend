@@ -1,5 +1,25 @@
-<h1>Payment success!</h1>
-
+<div class="jumbotron bg-white d-flex align-items-center min-vh-100">
+    <div class="container text-center">
+        <div class="container">
+            <div style="height: fit-content;" class="row justify-content-center align-items-center">
+                <div class="col-md-12">
+                    <img src="https://img.icons8.com/color/240/000000/checked--v1.png" src="" class="img-fluid"
+                        alt="success">
+                    <h3 class="h4 text-uppercase text-center text-success">Payment successful<br><small
+                            class="text-muted small" style="font-size: small;">Your
+                            payment method will be available soon.</small></h3>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <p class=" text-center text-muted small">You will redirect back to the app</p>
+        </div>
+    </div>
+</div>
 <script>
     setTimeout(function () {
         window.ReactNativeWebView.postMessage("Your payment method will be added soon...")

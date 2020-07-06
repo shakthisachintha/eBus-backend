@@ -1,7 +1,28 @@
-<h1>Payment Cancelled...</h1>
+<div class="jumbotron bg-white d-flex align-items-center min-vh-100">
+    <div class="container text-center">
+        <div class="container">
+            <div style="height: fit-content;" class="row justify-content-center align-items-center">
+                <div class="col-md-12">
+                    <img src="https://img.icons8.com/cotton/256/000000/cancel--v1.png" class="img-fluid"
+                        alt="cancel;ed">
+                    <h4 class="text-uppercase text-center text-danger h4">Payment cancelled<br><small
+                            class="text-muted small" style="font-size: small;">PAYMENT METHOD will not be available as
+                            you cancelled proceudre.</small></h4>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <p class=" text-center text-muted small">You will redirect back to the app</p>
+        </div>
+    </div>
+</div>
 <script>
     setTimeout(function () {
-        window.ReactNativeWebView.postMessage("You have cancelled the payment...")
+        window.ReactNativeWebView.postMessage("Your have cancelled adding the payment method...")
     }, 2500);
 </script>
