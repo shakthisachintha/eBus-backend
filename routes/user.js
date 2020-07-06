@@ -1,5 +1,5 @@
 const express = require("express");
-const User = require("../models/user");
+const User = require("../models/User");
 const Joi = require("joi");
 const _ = require("lodash");
 const bcrypt = require("bcrypt");
@@ -11,9 +11,9 @@ const router = express.Router();
 
 function validateUser(user) {
   const schema = {
-    name: Joi.string().min(3).required(),
-    email: Joi.string().min(8).required(),
-    password: Joi.string(),
+    name: Joi.string().min(3).required().label("Name"),
+    email: Joi.string().min(8).required().label("Email"),
+    password: Joi.string().label('Password'),
     isAdmin: Joi.boolean(),
     isConductor: Joi.boolean(),
     image: Joi.string(),
@@ -24,13 +24,13 @@ function validateUser(user) {
 
 router.post("/register", async (req, res) => {
   const { error } = validateUser(req.body);
-  if (error) return res.status(400).send(error.details[0].message);
+  if (error) return res.status(400).send({ error: error.details[0].message });
 
   let user = await User.findOne({
     email: req.body.email,
   });
 
-  if (user) return res.status(403).send("User already exist");
+  if (user) return res.status(403).send({ error: "User already exist!" });
 
   user = new User(_.pick(req.body, ["name", "email", "password"]));
   let salt = await bcrypt.genSalt(10);
