@@ -1,5 +1,5 @@
 const express = require("express");
-const User = require("../models/User");
+const User = require("../../models/User");
 const Joi = require("joi");
 const _ = require("lodash");
 
