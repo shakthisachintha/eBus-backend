@@ -1,7 +1,5 @@
 const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
-const { boolean } = require("joi");
-
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -36,6 +34,22 @@ const userSchema = new mongoose.Schema({
   image: {
     type: String,
   },
+  paymentMethods: [{
+    method: {
+      type: String,
+    },
+    token: {
+      type: String,
+    },
+    cardDetails: {
+      holderName: {
+        type: String
+      },
+      cardMask: {
+        type: String
+      },
+    }
+  }]
 }, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } });
 
 userSchema.pre('save', function (next) {
