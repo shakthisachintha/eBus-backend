@@ -38,6 +38,16 @@ function validateUserDetails(user) {
   return Joi.validate(user, schema);
 }
 
+function validatePassword(user) {
+  const schema = {
+    id: Joi.string(),
+    oldpassword: Joi.string().required().min(6).label('Old password'),
+    newpassword: Joi.string().required().min(6).label('New password'),
+    confirmpassword: Joi.string().required().valid(Joi.ref('newpassword'))
+  };
+  return Joi.validate(user, schema);
+}
+
 router.post("/register", async (req, res) => {
   const { error } = validateUser(req.body);
   if (error) return res.status(400).send({ error: error.details[0].message });
@@ -124,6 +134,27 @@ router.post("/update", async (req, res) => {
       console.log(data);
       res.send("Updated");
     }) 
+  } 
+  catch (error) {
+    res.status(400).send(error.message);
+  }
+});
+
+router.post("/changepassword", async (req, res) => {
+  const { error } = validatePassword(req.body);
+  if (error) return res.status(400).send({ error: error.details[0].message });
+  try {
+    const user = await User.findById(req.body.id)
+    const validPassword = await bcrypt.compare(req.body.oldpassword, user.password);
+    if (!validPassword)
+      return res.status(400).send({ error: "Invalid old password" });
+    else{
+      // user = new User(_.pick(req.body, ["oldpassword", "newpassword"]));
+      let salt = await bcrypt.genSalt(10);
+      user.password = await bcrypt.hash(req.body.newpassword, salt);
+      const result = await user.save();
+      res.status(200).send("Password updated");
+    }
   } 
   catch (error) {
     res.status(400).send(error.message);
