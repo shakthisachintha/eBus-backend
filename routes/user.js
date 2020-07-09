@@ -22,6 +22,22 @@ function validateUser(user) {
   return Joi.validate(user, schema);
 }
 
+function validateUserDetails(user) {
+  const schema = {
+    id: Joi.string(),
+    name: Joi.string().min(3).required().label("Name"),
+    email: Joi.string().min(8).required().label("Email"),
+    password: Joi.string().label('Password'),
+    isAdmin: Joi.boolean(),
+    isConductor: Joi.boolean(),
+    image: Joi.string(),
+    authProvider: Joi.string().allow("facebook"),
+    address: Joi.string(),
+    number: Joi.string()
+  };
+  return Joi.validate(user, schema);
+}
+
 router.post("/register", async (req, res) => {
   const { error } = validateUser(req.body);
   if (error) return res.status(400).send({ error: error.details[0].message });
@@ -91,6 +107,25 @@ router.get("/me", auth, async (req, res) => {
     const user = await User.findById(req.user.id).select("-password");
     res.status(200).send(user);
   } catch (error) {
+    res.status(400).send(error.message);
+  }
+});
+
+router.post("/update", async (req, res) => {
+  const { error } = validateUserDetails(req.body);
+  if (error) return res.status(400).send({ error: error.details[0].message });
+  try {
+    const user = await User.findByIdAndUpdate(req.body.id, {
+      name : req.body.name,
+      email : req.body.email,
+      address : req.body.address,
+      number : req.body.number
+    }).then(data=>{
+      console.log(data);
+      res.send("Updated");
+    }) 
+  } 
+  catch (error) {
     res.status(400).send(error.message);
   }
 });

@@ -34,6 +34,12 @@ const userSchema = new mongoose.Schema({
   image: {
     type: String,
   },
+  address: {
+    type: String,
+  },
+  number: {
+    type: String,
+  },
   paymentMethods: [{
     method: {
       type: String,
@@ -62,7 +68,7 @@ userSchema.pre('save', function (next) {
 });
 
 userSchema.methods.generateAuthToken = function () {
-  const { _id, userRole, name, email, image } = this;
+  const { _id, userRole, name, email, image, address, number } = this;
   const token = jwt.sign({
     id: _id,
     isAdmin: userRole.isAdmin,
