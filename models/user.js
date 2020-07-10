@@ -48,6 +48,12 @@ const userSchema = new mongoose.Schema({
   image: {
     type: String,
   },
+  address: {
+    type: String,
+  },
+  phoneNumber: {
+    type: String,
+  },
   paymentMethods: [{
     method: {
       type: String,
