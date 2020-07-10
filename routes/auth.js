@@ -43,7 +43,6 @@ router.post("/conductor/login", async (req, res) => {
     return res.status(400).send({ error: "Invalid username or password" });
 
   if(!user.userRole.isConductor) return res.status(403).send({ error: "Access denied" });
-  return res.status(200).send("Success");
   const token = user.generateAuthToken();
   return res.header("x-auth-token", token).send(_.pick(user, ['name', 'email', 'id']));
 });
