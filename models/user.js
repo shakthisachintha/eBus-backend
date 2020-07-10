@@ -37,7 +37,7 @@ const userSchema = new mongoose.Schema({
   address: {
     type: String,
   },
-  number: {
+  phoneNumber: {
     type: String,
   },
   paymentMethods: [{
