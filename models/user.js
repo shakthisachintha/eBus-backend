@@ -26,9 +26,23 @@ const userSchema = new mongoose.Schema({
       type: Boolean,
       default: false
     },
+    isOwner: {
+      type: Boolean,
+      default: false,
+    },
     isConductor: {
       type: Boolean,
       default: false
+    }
+  },
+  ownerMeta: {
+    address: {
+      type: String,
+      required: function () { return this.userRole.isOwner }
+    },
+    nic: {
+      type: String,
+      required: function () { return this.userRole.isOwner }
     }
   },
   image: {
@@ -66,6 +80,7 @@ userSchema.methods.generateAuthToken = function () {
   const token = jwt.sign({
     id: _id,
     isAdmin: userRole.isAdmin,
+    isOwner: userRole.isOwner,
     name,
     email,
     image
