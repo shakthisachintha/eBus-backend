@@ -17,30 +17,15 @@ function validateUser(user) {
     isAdmin: Joi.boolean(),
     isConductor: Joi.boolean(),
     image: Joi.string(),
-    authProvider: Joi.string().allow("facebook")
-  };
-  return Joi.validate(user, schema);
-}
-
-function validateUserDetails(user) {
-  const schema = {
-    id: Joi.string(),
-    name: Joi.string().min(3).required().label("Name"),
-    email: Joi.string().min(8).required().label("Email"),
-    password: Joi.string().label('Password'),
-    isAdmin: Joi.boolean(),
-    isConductor: Joi.boolean(),
-    image: Joi.string(),
     authProvider: Joi.string().allow("facebook"),
     address: Joi.string(),
-    number: Joi.string()
+    phoneNumber: Joi.string()
   };
   return Joi.validate(user, schema);
 }
 
 function validatePassword(user) {
   const schema = {
-    id: Joi.string(),
     oldpassword: Joi.string().required().min(6).label('Old password'),
     newpassword: Joi.string().required().min(6).label('New password'),
     confirmpassword: Joi.string().required().valid(Joi.ref('newpassword'))
@@ -121,11 +106,11 @@ router.get("/me", auth, async (req, res) => {
   }
 });
 
-router.post("/update", async (req, res) => {
-  const { error } = validateUserDetails(req.body);
+router.post("/update", auth, async (req, res) => {
+  const { error } = validateUser(req.body);
   if (error) return res.status(400).send({ error: error.details[0].message });
   try {
-    const user = await User.findByIdAndUpdate(req.body.id, {
+    const user = await User.findByIdAndUpdate(req.user.id, {
       name : req.body.name,
       email : req.body.email,
       address : req.body.address,
@@ -140,11 +125,11 @@ router.post("/update", async (req, res) => {
   }
 });
 
-router.post("/changepassword", async (req, res) => {
+router.post("/changepassword", auth, async (req, res) => {
   const { error } = validatePassword(req.body);
   if (error) return res.status(400).send({ error: error.details[0].message });
   try {
-    const user = await User.findById(req.body.id)
+    const user = await User.findById(req.user.id)
     const validPassword = await bcrypt.compare(req.body.oldpassword, user.password);
     if (!validPassword)
       return res.status(400).send({ error: "Invalid old password" });
