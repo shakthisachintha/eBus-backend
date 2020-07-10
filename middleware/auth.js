@@ -10,7 +10,6 @@ function auth(req, res, next) {
     next();
   } catch (ex) {
     return res.status(401).send("Access denied, invalid token provided");
-
   }
 }
 

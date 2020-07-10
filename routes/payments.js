@@ -1,7 +1,6 @@
 const express = require("express");
 const auth = require("../middleware/auth");
 const User = require("../models/User");
-var crypto = require('crypto');
 
 const router = express.Router();
 
@@ -19,7 +18,7 @@ router.post('/payhere/notify', async function (req, res) {
         _id: req.body.custom_1,
     });
     let cardDetails = null;
-    if (req.body.method === "VISA" || req.body.method === "MASTER") {
+    if (req.body.method === "VISA" || req.body.method === "MASTER" || req.body.method === "TEST") {
         cardDetails = {
             holderName: req.body.card_holder_name,
             cardMask: req.body.card_no,

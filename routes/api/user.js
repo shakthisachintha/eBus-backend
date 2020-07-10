@@ -1,11 +1,11 @@
 const express = require("express");
-const User = require("../models/User");
+const User = require("../../models/User");
 const Joi = require("joi");
 const _ = require("lodash");
 const bcrypt = require("bcrypt");
 const http = require('https');
 const fs = require('fs');
-const auth = require("../middleware/auth");
+const auth = require("../../middleware/auth");
 
 const router = express.Router();
 
