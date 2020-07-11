@@ -1,5 +1,5 @@
 const express = require("express");
-const User = require("../../models/WebUser");
+const User = require("../../models/Bus");
 const Joi = require("joi");
 const _ = require("lodash");
 const bcrypt = require("bcrypt");
@@ -13,6 +13,8 @@ function validateUser(user) {
   const schema = {
     name: Joi.string().min(3).required().label("Name"),
     email: Joi.string().min(8).required().label("Email"),
+    address: Joi.string().min(8).required().label("Address"),
+    password: Joi.string().label('Password'),
   };
   return Joi.validate(user, schema);
 }
@@ -27,22 +29,22 @@ router.post("/register", async (req, res) => {
 
   if (user) return res.status(403).send({ error: "User already exist!" });
 
-  user = new User(_.pick(req.body, ["name", "email"]));
+  user = new User(_.pick(req.body, ["name", "email", "address","password"]));
   let salt = await bcrypt.genSalt(10);
+  user.password = await bcrypt.hash(user.password, salt);
 
   try {
     const result = await user.save();
     const token = user.generateAuthToken();
 
     return res
-      .header("x-auth-token", token).send(_.pick(result, ["id", "name", "email"]));
+      .header("x-auth-token", token).send(_.pick(result, ["id", "name", "email","address"]));
   } catch (error) {
     for (field in error.errors) {
       return res.status(400).send(error.errors[field].message);
     }
   }
 });
-
 
 
 module.exports = router;
