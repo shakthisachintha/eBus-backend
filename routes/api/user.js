@@ -110,13 +110,20 @@ router.post("/update", auth, async (req, res) => {
   const { error } = validateUser(req.body);
   if (error) return res.status(400).send({ error: error.details[0].message });
   try {
+    let userEmail = await User.findOne({
+      email: req.body.email,
+    });
+    if (userEmail) {
+      if(req.user.email!==req.body.email)
+      return res.status(403).send({ error: "User already exist in this email address!" });
+    }
     const user = await User.findByIdAndUpdate(req.user.id, {
       name : req.body.name,
       email : req.body.email,
       address : req.body.address,
-      number : req.body.number
+      phoneNumber : req.body.phoneNumber
     }).then(data=>{
-      console.log(data);
+      // console.log(data);
       res.send("Updated");
     }) 
   } 
