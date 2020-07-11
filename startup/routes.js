@@ -1,5 +1,6 @@
 const authRoutes = require("../routes/api/auth");
 const userRoutes = require("../routes/api/user");
+const webUserRoutes = require("../routes/api/webUser");
 const paymentRoutes = require("../routes/payments");
 const apiPayementRoutes = require("../routes/api/payments");
 const express = require("express");
@@ -10,6 +11,7 @@ module.exports = function (app) {
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
     app.use("/api/user", userRoutes);
+    app.use("/api/webUser", webUserRoutes);
     app.use("/api/auth", authRoutes);
     app.use("/api/payment", apiPayementRoutes);
 
