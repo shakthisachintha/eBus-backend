@@ -6,7 +6,6 @@ const mongoose = require('mongoose');
 const auth = require("../../middleware/auth");
 const { schema } = require("../../models/bus");
 
-// let Bus = require("../../models/bus");
 const router = express.Router();
 
 function validateBus(bus) {
