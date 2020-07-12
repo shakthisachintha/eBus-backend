@@ -47,4 +47,28 @@ router.post("/conductor/login", async (req, res) => {
   return res.header("x-auth-token", token).send(_.pick(user, ['name', 'email', 'id']));
 });
 
+router.post("/forgetpassword", async (req, res) => {
+  // let userEmail = await User.findOne({ email: req.body.email });
+  // if (!userEmail) return res.status(400).send({ error: "Invalid email address" });
+  // const code = Math.floor(100000 + Math.random() * 900000);
+  // console.log(code);
+  // const user = await User.findOneAndUpdate({ email: req.body.email }, {
+  //   resetCode: code
+  // }).then(()=>{
+  //   res.status(200).send("Reset Code Sent");
+  // }) 
+  try {
+      let user = await User.findOne({ email: req.body.email });
+      if (!user) return res.status(400).send({ error: "Invalid email address" });
+      const code = Math.floor(100000 + Math.random() * 900000);
+      user.resetCode = code;
+      const result = await user.save();
+      if (!result) return res.status(400).send({ error: "Something went wrong!" });
+      res.status(200).send("Reset Code Sent");
+  } 
+  catch (error) {
+    res.status(400).send(error.message);
+  }
+});
+
 module.exports = router;
