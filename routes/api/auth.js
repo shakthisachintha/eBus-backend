@@ -15,6 +15,14 @@ function validateUser(req) {
   return Joi.validate(req, schema);
 }
 
+function validatePassword(user) {
+  const schema = {
+    newpassword: Joi.string().required().min(6).label('New password'),
+    confirmpassword: Joi.string().required().valid(Joi.ref('newpassword'))
+  };
+  return Joi.validate(user, schema);
+}
+
 router.post("/", async (req, res) => {
   const { error } = validateUser(req.body);
   if (error) return res.status(400).send(error.details[0].message);
@@ -79,6 +87,23 @@ router.post("/forgetpassword/verify", async (req, res) => {
       const result = await resetReq.save();
       if (!result) return res.status(400).send({ error: "Something went wrong!" });
       res.status(200).send(result);
+  } 
+  catch (error) {
+    res.status(400).send(error.message);
+  }
+});
+
+router.post("/resetpassword/:id", async (req, res) => {
+  try {
+      let reqUser = await User.findOne({ _id: req.params.id });
+      if (!reqUser) return res.status(401).send({ error: "Invalid!!!" });
+      const { error } = validatePassword(req.body);
+      if (error) return res.status(400).send(error.details[0].message);
+      let salt = await bcrypt.genSalt(10);
+      reqUser.password = await bcrypt.hash(req.body.newpassword, salt);
+      const result = await reqUser.save();
+      if (!result) return res.status(400).send({ error: "Something went wrong!" });
+      res.status(200).send("Password Changed");
   } 
   catch (error) {
     res.status(400).send(error.message);
