@@ -71,4 +71,18 @@ router.post("/forgetpassword", async (req, res) => {
   }
 });
 
+router.post("/forgetpassword/verify", async (req, res) => {
+  try {
+      let resetReq = await User.findOne({ resetCode: req.body.code });
+      if (!resetReq) return res.status(400).send({ error: "Invalid Code!!!" });
+      resetReq.resetCode = null;
+      const result = await resetReq.save();
+      if (!result) return res.status(400).send({ error: "Something went wrong!" });
+      res.status(200).send(result);
+  } 
+  catch (error) {
+    res.status(400).send(error.message);
+  }
+});
+
 module.exports = router;
