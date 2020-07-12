@@ -3,15 +3,11 @@ const Bus = require("../../models/bus");
 const Joi = require("joi");
 const _ = require("lodash");
 const mongoose = require('mongoose');
-const bodyParser = require('body-parser');
-const http = require('https');
 const auth = require("../../middleware/auth");
 const { schema } = require("../../models/bus");
 
 // let Bus = require("../../models/bus");
 const router = express.Router();
-
-app.use(bodyParser.json());
 
 function validateBus(bus) {
     const schema = {
