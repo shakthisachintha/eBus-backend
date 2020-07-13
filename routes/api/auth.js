@@ -72,7 +72,7 @@ router.post("/forgetpassword", async (req, res) => {
       user.resetCode = code;
       const result = await user.save();
       if (!result) return res.status(400).send({ error: "Something went wrong!" });
-      res.status(200).send("Reset Code Sent");
+      res.status(200).send(result);
   } 
   catch (error) {
     res.status(400).send(error.message);
@@ -81,10 +81,11 @@ router.post("/forgetpassword", async (req, res) => {
 
 router.post("/forgetpassword/verify", async (req, res) => {
   try {
-      let resetReq = await User.findOne({ resetCode: req.body.code });
-      if (!resetReq) return res.status(400).send({ error: "Invalid Code!!!" });
-      resetReq.resetCode = null;
-      const result = await resetReq.save();
+      let reqUser = await User.findOne({ email: req.body.email });
+      if (!reqUser) return res.status(401).send({ error: "Invalid user!!!" });
+      if(req.body.code!=reqUser.resetCode) return res.status(400).send({ error: "Invalid Verification Code!!!" });
+      reqUser.resetCode = null;
+      const result = await reqUser.save();
       if (!result) return res.status(400).send({ error: "Something went wrong!" });
       res.status(200).send(result);
   } 
@@ -93,11 +94,12 @@ router.post("/forgetpassword/verify", async (req, res) => {
   }
 });
 
-router.post("/resetpassword/:id", async (req, res) => {
+router.post("/resetpassword", async (req, res) => {
   try {
-      let reqUser = await User.findOne({ _id: req.params.id });
+      let reqUser = await User.findOne({ _id: req.body.id });
       if (!reqUser) return res.status(401).send({ error: "Invalid!!!" });
-      const { error } = validatePassword(req.body);
+      userpasswords={newpassword:req.body.newpassword, confirmpassword:req.body.confirmpassword}
+      const { error } = validatePassword(userpasswords);
       if (error) return res.status(400).send(error.details[0].message);
       let salt = await bcrypt.genSalt(10);
       reqUser.password = await bcrypt.hash(req.body.newpassword, salt);
