@@ -54,9 +54,6 @@ const userSchema = new mongoose.Schema({
   phoneNumber: {
     type: String,
   },
-  resetCode: {
-    type: Number
-  },
   paymentMethods: [{
     method: {
       type: String,
