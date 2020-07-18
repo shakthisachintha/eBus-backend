@@ -86,6 +86,27 @@ router.post("/forgetpassword", async (req, res) => {
   }
 });
 
+router.post("/conductor/forgetpassword", async (req, res) => { 
+  try {
+      let user = await User.findOne({ email: req.body.email });
+      if(!user.userRole.isConductor) return res.status(400).send({ error: "Invalid email address" });
+      const code = Math.floor(100000 + Math.random() * 900000);
+      let userExist = await ForgetPasswordUser.findOne({ email: req.body.email });
+      if(userExist){
+        userExist.resetCode = code;
+        result = await userExist.save();
+      }else{
+        forgetPasswordUser = new ForgetPasswordUser({ email: req.body.email, resetCode: code, requestUserID: user._id});
+        result = await forgetPasswordUser.save();
+      }
+      if (!result) return res.status(400).send({ error: "Something went wrong!" });
+      res.status(200).send(result);
+  } 
+  catch (error) {
+    res.status(400).send(error.message);
+  }
+});
+
 router.post("/forgetpassword/verify", async (req, res) => {
   try {
       let reqUser = await ForgetPasswordUser.findOne({ email: req.body.email });
