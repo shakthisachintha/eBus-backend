@@ -47,11 +47,31 @@ router.get("/", async (req, res) => {
 
 router.get("/:id", async (req, res) => {
     try {
-    const bus = await Bus.findById(req.bus.id);
+        console.log(req.params.id)
+    const bus = await Bus.findById(req.body.id);
     res.status(200).send(bus);
     } catch (error) {
     res.status(400).send(error.message);
     }
+});
+
+router.post("/bus-profile", async (req, res) => {
+    // try {
+    // const bus = await Bus.findById(req.body.id);
+
+    // res.status(200).send(bus);
+    // } catch (error) {
+    // res.status(400).send(error.message);
+    // }
+    console.log("router")
+    Bus.findById(req.body.id)
+    .then((result) => {
+      res.json(result);
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+  res.status(200);
 });
 
 // router.route('/register').post(function (req, res) {
@@ -70,8 +90,9 @@ router.post("/register", async (req, res) => {
 });
 
 // router.route('/update/:id').post(function (req, res) {
-router.post("/update/:id", async (req, res) => {
-    Bus.findById(req.params.id, function (err, busDetail) {
+// router.post("/update/:id", async (req, res) => { 
+router.post("/update", async (req, res) => { 
+    Bus.findById(req.body.id, function (err, busDetail) {
         if (!busDetail) {
             res.status(404).send('data is not found');
 
