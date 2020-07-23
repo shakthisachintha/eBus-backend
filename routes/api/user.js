@@ -125,8 +125,8 @@ router.post("/update", auth, async (req, res) => {
     }).then(data=>{
       // console.log(data);
       res.send("Updated");
-    }) 
-  } 
+    })
+  }
   catch (error) {
     res.status(400).send(error.message);
   }
@@ -147,10 +147,17 @@ router.post("/changepassword", auth, async (req, res) => {
       const result = await user.save();
       res.status(200).send("Password updated");
     }
-  } 
+  }
   catch (error) {
     res.status(400).send(error.message);
   }
 });
+router.get('/viewpassenger',auth, async(req,res)=>{
+  User.find({}).then(data=>{
+      res.send(data)
+  }).catch(err=>{
+      console.log(err)
+  })
+})
 
 module.exports = router;
