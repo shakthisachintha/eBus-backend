@@ -111,5 +111,17 @@ router.post("/update", async (req, res) => {
     });
 });
 
+router.post("/delete", async (req, res) => {
+    await Bus.deleteOne(req.body.id)
+        .then(buses => {
+            console.log(buses)
+            res.status(200).json({ 'buses': 'bus deleted successfully' });
+        })
+        .catch(err => {
+            console.log("deleted")
+            res.status(400).send('deleting bus failed');
+        });
+});
+
 
 module.exports = router;
