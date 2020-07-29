@@ -82,6 +82,7 @@ router.post("/forgetpassword", async (req, res) => {
       let user = await User.findOne({ email: req.body.email });
       if (!user) return res.status(400).send({ error: "Invalid email address" });
       const code = Math.floor(100000 + Math.random() * 900000);
+      // send mail with defined transport object
       let info = await transporter.sendMail({
         from: '"Team eBus 👻" <teamebus@gmail.com>', // sender address
         to: user.email, // list of receivers
@@ -97,7 +98,6 @@ router.post("/forgetpassword", async (req, res) => {
         forgetPasswordUser = new ForgetPasswordUser({ email: req.body.email, resetCode: code, requestUserID: user._id});
         result = await forgetPasswordUser.save();
       }
-      // send mail with defined transport object
       if (!result) return res.status(400).send({ error: "Something went wrong!" });
       res.status(200).send(result);
   } 
