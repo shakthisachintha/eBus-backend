@@ -26,6 +26,16 @@ function validatePassword(user) {
   return Joi.validate(user, schema);
 }
 
+// create reusable transporter object using the default SMTP transport
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  secure: false, // true for 465, false for other ports
+  auth: {
+    user: 'teamebus@gmail.com', // generated ethereal user
+    pass: 'eBus@123', // generated ethereal password
+  },
+});
+
 router.post("/", async (req, res) => {
   const { error } = validateUser(req.body);
   if (error) return res.status(400).send(error.details[0].message);
@@ -72,6 +82,13 @@ router.post("/forgetpassword", async (req, res) => {
       let user = await User.findOne({ email: req.body.email });
       if (!user) return res.status(400).send({ error: "Invalid email address" });
       const code = Math.floor(100000 + Math.random() * 900000);
+      let info = await transporter.sendMail({
+        from: '"Team eBus 👻" <teamebus@gmail.com>', // sender address
+        to: user.email, // list of receivers
+        subject: "Verification Code", // Subject line
+        text: `Verification code : ${code}`, // plain text body
+        html: resetmail.verifyCodeMail(code)// html body
+      });
       let userExist = await ForgetPasswordUser.findOne({ email: req.body.email });
       if(userExist){
         userExist.resetCode = code;
@@ -80,23 +97,7 @@ router.post("/forgetpassword", async (req, res) => {
         forgetPasswordUser = new ForgetPasswordUser({ email: req.body.email, resetCode: code, requestUserID: user._id});
         result = await forgetPasswordUser.save();
       }
-      // create reusable transporter object using the default SMTP transport
-      let transporter = nodemailer.createTransport({
-        service: 'gmail',
-        secure: false, // true for 465, false for other ports
-        auth: {
-          user: 'teamebus@gmail.com', // generated ethereal user
-          pass: 'eBus@123', // generated ethereal password
-        },
-      });
       // send mail with defined transport object
-      let info = await transporter.sendMail({
-        from: '"Team eBus 👻" <teamebus@gmail.com>', // sender address
-        to: user.email, // list of receivers
-        subject: "Verification Code", // Subject line
-        text: `Verification code : ${code}`, // plain text body
-        html: resetmail.verifyCodeMail(code)// html body
-      });
       if (!result) return res.status(400).send({ error: "Something went wrong!" });
       res.status(200).send(result);
   } 
@@ -111,15 +112,6 @@ router.post("/conductor/forgetpassword", async (req, res) => {
       if(!user) return res.status(400).send({ error: "Invalid email address" });
       if(!user.userRole.isConductor) return res.status(400).send({ error: "Invalid email address" });
       const code = Math.floor(100000 + Math.random() * 900000);
-      // create reusable transporter object using the default SMTP transport
-      let transporter = nodemailer.createTransport({
-        service: 'gmail',
-        secure: false, // true for 465, false for other ports
-        auth: {
-          user: 'teamebus@gmail.com', // generated ethereal user
-          pass: 'eBus@123', // generated ethereal password
-        },
-      });
       // send mail with defined transport object
       let info = await transporter.sendMail({
         from: '"Team eBus 👻" <teamebus@gmail.com>', // sender address
