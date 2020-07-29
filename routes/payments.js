@@ -13,7 +13,6 @@ router.get('/payhere/cancel', function (req, res) {
 });
 
 router.post('/payhere/notify', async function (req, res) {
-    // console.log(req.body);
     let user = await User.findOne({
         _id: req.body.custom_1,
     });
