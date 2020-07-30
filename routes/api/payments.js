@@ -2,6 +2,10 @@ const express = require("express");
 const auth = require("../../middleware/auth");
 const User = require("../../models/User");
 const _ = require("lodash");
+const axios = require('axios').default;
+const qs = require('querystring');
+const { chargeAPI, authAPI } = require('../../api/payhere');
+const { request } = require("http");
 
 const router = express.Router();
 
@@ -29,5 +33,18 @@ router.post("/get-primary-method", auth, async (req, res) => {
     if (method) return res.send(method);
     return res.status(404).send({ error: "Primary payment method not found" });
 });
+
+router.post("/charge", async (req, res) => {
+    const order_id = "Trip12333";
+    const items = "Bus fare #12333";
+    const amount = 100.50;
+    const customer_token = "C619B097321D780E660095A1A278FCFB";
+    const req_body = {
+        order_id, items, currency: "LKR", amount, customer_token
+    }
+    const result = await chargeAPI.post('', req_body);
+    res.send(result.data);
+});
+
 
 module.exports = router;
