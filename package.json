@@ -22,6 +22,7 @@
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.19",
     "mongoose": "^5.9.20",
+    "nodemailer": "^6.4.10",
     "winston": "^2.4.0",
     "winston-mongodb": "^3.0.0"
   }
