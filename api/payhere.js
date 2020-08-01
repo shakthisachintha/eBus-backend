@@ -1,5 +1,3 @@
-const { request } = require('express');
-
 const create = require('apisauce').create;
 
 const auth_code = process.env.PAYHERE_AUTHORIZATION_CODE;
