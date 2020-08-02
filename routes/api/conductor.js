@@ -6,7 +6,6 @@ const bcrypt = require("bcrypt");
 const http = require('https');
 const fs = require('fs');
 const auth = require("../../middleware/auth");
-
 const router = express.Router();
 
 function validateConductor(user) {
