@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
+const _ = require("lodash");
+
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -26,12 +28,32 @@ const userSchema = new mongoose.Schema({
       type: Boolean,
       default: false
     },
+    isOwner: {
+      type: Boolean,
+      default: false,
+    },
     isConductor: {
       type: Boolean,
       default: false
     }
   },
+  ownerMeta: {
+    address: {
+      type: String,
+      required: function () { return this.userRole.isOwner }
+    },
+    nic: {
+      type: String,
+      required: function () { return this.userRole.isOwner }
+    }
+  },
   image: {
+    type: String,
+  },
+  address: {
+    type: String,
+  },
+  phoneNumber: {
     type: String,
   },
   paymentMethods: [{
@@ -40,6 +62,10 @@ const userSchema = new mongoose.Schema({
     },
     token: {
       type: String,
+    },
+    isPrimary: {
+      type: Boolean,
+      default: false
     },
     cardDetails: {
       holderName: {
@@ -66,6 +92,7 @@ userSchema.methods.generateAuthToken = function () {
   const token = jwt.sign({
     id: _id,
     isAdmin: userRole.isAdmin,
+    isOwner: userRole.isOwner,
     name,
     email,
     image
@@ -73,6 +100,41 @@ userSchema.methods.generateAuthToken = function () {
   return token;
 };
 
+userSchema.methods.setPrimaryPayMethod = async function (methodID) {
+  var methods = this.paymentMethods;
+
+  methods.forEach(method => {
+    if (method.isPrimary) {
+      method.isPrimary = false;
+      return
+    }
+  });
+
+  methods.forEach(method => {
+    if (method._id == methodID) {
+      method.isPrimary = true
+    }
+  });
+
+  this.paymentMethods = methods;
+  await this.save();
+  return await this.getPrimaryPayMethod();
+}
+
+userSchema.methods.getPrimaryPayMethod = function () {
+
+  var methods = this.paymentMethods;
+  var primaryMethod = null;
+
+  methods.forEach(method => {
+    if (method.isPrimary) {
+      primaryMethod = _.pick(method, ['_id', 'method', 'cardDetails']);
+      return
+    }
+  });
+
+  return primaryMethod;
+}
 const User = mongoose.model("User", userSchema);
 
 module.exports = User;
