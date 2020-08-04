@@ -22,7 +22,13 @@ chargeAPI.addAsyncRequestTransform(async (request) => {
     const { data } = await authAPI.post('', 'grant_type=client_credentials');
     console.log(data.access_token)
     request.headers['Authorization'] = `Bearer ${data.access_token}`
-})
+});
 
-module.exports = { authAPI, chargeAPI }
+const charge = async (info = { order_id, items, amount, customer_token, currency: "LKR" }) => {
+    const result = await chargeAPI.post('', info);
+    if (!result.ok) return null;
+    return result.data;
+}
+
+module.exports = { authAPI, charge }
 

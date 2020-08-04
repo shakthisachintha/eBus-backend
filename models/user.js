@@ -128,7 +128,7 @@ userSchema.methods.getPrimaryPayMethod = function () {
 
   methods.forEach(method => {
     if (method.isPrimary) {
-      primaryMethod = _.pick(method, ['_id', 'method', 'cardDetails']);
+      primaryMethod = method;
       return
     }
   });
