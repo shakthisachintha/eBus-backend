@@ -29,8 +29,23 @@ const userSchema = new mongoose.Schema({
     isConductor: {
       type: Boolean,
       default: false
+    },
+    isOWner:{
+      type:Boolean,
+      default:false,
     }
   },
+  OwnerDetails:{
+    address:{
+      type: String,
+      required: function(){return this.userRole.isOWner}
+    },
+    nic:{
+      type:String,
+      required: function(){return this.userRole.isOWner}
+    }
+  },
+
   image: {
     type: String,
   },
