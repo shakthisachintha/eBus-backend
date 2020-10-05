@@ -24,10 +24,10 @@ router.get("/findBus/:start/:end", async (req, res) => {
 
 router.get("/getBusSeat/:busId/:date", async (req, res) => {
     try {
-    console.log(req.params);
-      const bus = await Booking.find({busId:req.params.busId,date:req.params.date});
-      console.log(bus)
-      if(bus.length==0){
+        console.log(req.params);
+        const bus = await Booking.find({busId:req.params.busId,date:req.params.date});
+        console.log(bus)
+        if(bus.length==0){
             const newBook=new Booking();
             newBook.busId=req.params.busId;
             newBook.date=req.params.date;
@@ -49,35 +49,32 @@ router.get("/getBusSeat/:busId/:date", async (req, res) => {
                 console.log(err)
             });
       }else{
-          res.send(bus)
+        res.send(bus)
       }
     //   res.status(200).send("bus");
     } catch (error) {
-      res.status(400).send(error.message);
+        res.status(400).send(error.message);
     }
 });
 
 
 router.get("/bookSeat/:busId/:date/:seat", async (req, res) => {
     try {
-    console.log(req.params);
-      const bus = await Booking.find({busId:req.params.busId,date:req.params.date});
-      
-      
-            
-            
-            bus[0].seat[req.params.seat]=true;
-            
-            const temp = await Booking.updateOne({_id:bus[0]._id},{seat:bus[0].seat});
-            console.log(temp)
-            let seat=[];
-            // let now =new Date();
-            // let today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
-            // today.getTime();
-            res.send(temp);
-    //   res.status(200).send("bus");
+        console.log(req.params);
+        const bus = await Booking.find({busId:req.params.busId,date:req.params.date});
+
+        bus[0].seat[req.params.seat]=true;
+        
+        const temp = await Booking.updateOne({_id:bus[0]._id},{seat:bus[0].seat});
+        console.log(temp)
+        let seat=[];
+        // let now =new Date();
+        // let today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+        // today.getTime();
+        res.send(temp);
+        //   res.status(200).send("bus");
     } catch (error) {
-      res.status(400).send(error.message);
+        res.status(400).send(error.message);
     }
 });
 
