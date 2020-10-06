@@ -3,7 +3,7 @@ const userRoutes = require("../routes/api/user");
 // const webUserRoutes = require("../routes/api/webUser");
 const paymentRoutes = require("../routes/payments");
 const apiPayementRoutes = require("../routes/api/payments");
-Routes = require("../routes/api/conductor")
+const conductorRoutes = require("../routes/api/conductor")
 const BusRoutes = require("../routes/api/bus")
 const TripRoutes = require("../routes/api/trip")
 const express = require("express");
@@ -22,7 +22,7 @@ module.exports = function (app) {
     app.use("/payments", paymentRoutes);
     app.use(error);
     app.use("/images", express.static('storage/public'));
-
+    app.use("/api/bus",BusRoutes);
   
   app.use(function (req, res, next) {
     res.header("Access-Control-Allow-Origin", "http://localhost:3000"); // update to match the domain you will make the request from
