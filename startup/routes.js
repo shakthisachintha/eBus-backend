@@ -4,17 +4,22 @@ const paymentRoutes = require("../routes/payments");
 const apiPayementRoutes = require("../routes/api/payments");
 const BusRoutes = require("../routes/api/bus")
 const TripRoutes = require("../routes/api/trip")
+// const SummaryReportRoutes = require("../routes/api/report");
 const express = require("express");
 const error = require("../middleware/error");
 
 
 module.exports = function (app) {
   app.use(function (req, res, next) {
-    res.header("Access-Control-Allow-Origin", "http://localhost:3000"); // update to match the domain you will make the request from
+    res.header("Access-Control-Allow-Origin", "http://localhost:3001"); // update to match the domain you will make the request from
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     next();
   });
 
+  // app.use("/", function(req,res,next){
+  //   console.log(req.path);
+  //   next();
+  // });
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
   app.use("/api/user", userRoutes);
@@ -26,4 +31,6 @@ module.exports = function (app) {
   app.use("/payments", paymentRoutes);
   app.use(error);
   app.use("/images", express.static('storage/public'));
+
+  // app.use("/api/report",SummaryReportRoutes);
 }
