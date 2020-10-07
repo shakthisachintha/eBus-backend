@@ -78,8 +78,9 @@ router.post("/bus-profile", async (req, res) => {
 router.post("/register", async (req, res) => {
     const { error } = validateBus(req.body);
     if (error) return res.status(400).send({ error: error.details[0].message });
-
+    
     let buses = new Bus(req.body);
+    console.log("Test");
     buses.save()
         .then(buses => {
             res.status(200).json({ 'buses': 'buses added successfully' });
@@ -122,6 +123,8 @@ router.post("/delete", async (req, res) => {
             res.status(400).send('deleting bus failed');
         });
 });
+
+
 
 
 module.exports = router;
