@@ -30,7 +30,7 @@ router.post("/set-primary-method", auth, async (req, res) => {
 router.post("/get-primary-method", auth, async (req, res) => {
     const user = await User.findById(req.user.id);
     const method = user.getPrimaryPayMethod();
-    if (method) return res.send(method);
+    if (method) return res.send(_.pick(method, ['_id', 'method', 'cardDetails']));
     return res.status(404).send({ error: "Primary payment method not found" });
 });
 

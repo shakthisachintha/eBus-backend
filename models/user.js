@@ -35,7 +35,7 @@ const userSchema = new mongoose.Schema({
     isConductor: {
       type: Boolean,
       default: false
-    }
+    },
   },
   ownerMeta: {
     address: {
@@ -45,7 +45,12 @@ const userSchema = new mongoose.Schema({
     nic: {
       type: String,
       required: function () { return this.userRole.isOwner }
-    }
+    },
+    contactNo:{
+      type:String,
+      required: function(){return this.userRole.isOWner}
+    },      
+
   },
   image: {
     type: String,
@@ -128,7 +133,7 @@ userSchema.methods.getPrimaryPayMethod = function () {
 
   methods.forEach(method => {
     if (method.isPrimary) {
-      primaryMethod = _.pick(method, ['_id', 'method', 'cardDetails']);
+      primaryMethod = method;
       return
     }
   });
