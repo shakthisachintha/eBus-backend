@@ -1,12 +1,12 @@
 const express = require("express");
+const _ = require("lodash");
+const Joi = require("joi");
 const auth = require("../../middleware/auth");
 const Trip = require("../../models/trip");
-const Joi = require("joi");
-const _ = require("lodash");
+const Bus = require("../../models/bus");
+const User = require("../../models/User");
 const googleMaps = require('../../api/maps');
 const payHere = require('../../api/payhere');
-const { info } = require("winston");
-const User = require("../../models/User");
 
 const router = express.Router();
 
@@ -27,20 +27,35 @@ function updateRequestValidate(trip) {
 }
 
 router.post("/new", auth, async (req, res) => {
+    const activeTrip = await getActiveTrip(req.user);
+    if (activeTrip) return res.status(403).send({ message: "There exist another active trip" })
 
     const { error } = validateTrip(req.body);
     if (error) return res.status(400).send({ error: error.details[0].message });
 
     const trip = new Trip();
-    trip.bus = req.body.bus;
+    const bus = await Bus.findOne({ busNo: req.body.bus });
+    if (!bus) return res.status(404).send({ message: "Bus not registered." })
+
+    trip.bus = {
+        number: bus.busNo,
+        driver: bus.personals.driver,
+        conductor: bus.personals.conductor,
+    }
     trip.passenger = req.user.id;
     trip.cordes.push(req.body.start);
 
     const start_location = await googleMaps.getAddress(req.body.start.lat, req.body.start.lng);
     trip.start = start_location;
-    trip.save();
+    await trip.save();
     res.send(trip);
 
+});
+
+router.post("/active", auth, async (req, res) => {
+    const activeTrip = await getActiveTrip(req.user);
+    if (!activeTrip) return res.status(404).send({ message: "No active trip found" });
+    return res.status(200).send(activeTrip);
 });
 
 router.post("/update", auth, async (req, res) => {
@@ -54,8 +69,12 @@ router.post("/update", auth, async (req, res) => {
     res.status(200).send();
 });
 
+
 router.post("/end", auth, async (req, res) => {
     const trip = await Trip.findOne({ _id: req.body.tripID });
+    if (!trip) return res.status(401).message('Trip not found');
+    trip.cordes.push(req.body.location);
+    await trip.save();
     const user = await User.findById(req.user.id);
     const tripInfo = await getTripInfo(trip.cordes);
     const payMethod = user.getPrimaryPayMethod();
@@ -69,38 +88,27 @@ router.post("/end", auth, async (req, res) => {
     if (payment.status == 1) {
         trip.isPaid = true;
         trip.fare.payment.method = `${payMethod.method}(${payMethod.cardDetails.cardMask})`;
+    }
+    trip.end = tripInfo.trip.end;
+    trip.distance = {
+        distance: tripInfo.trip.distance,
+        time: tripInfo.trip.time,
     }
     trip.isCompleted = true;
 
     await trip.save();
 
-    res.status(200).send(_.pick(trip, ["bus", "start", "end", "fare", "isPaid", "isCompleted"]));
+    res.status(200).send(_.pick(trip, ["bus", "start", "end", "fare", "isPaid", "isCompleted", "distance"]));
 });
 
-
-router.post("/test", async (req, res) => {
-    const trip = await Trip.findOne({ _id: req.body.tripID });
-    const user = await User.findById(req.user.id);
-    const tripInfo = await getTripInfo(trip.cordes);
-    const payMethod = user.getPrimaryPayMethod();
-    const payment = await payHere.charge({
-        amount: tripInfo.fare.value,
-        items: `Bus fare ${trip.id}`,
-        order_id: trip.id,
-        customer_token: payMethod.token
-    });
-    trip.fare.amount = tripInfo.fare
-    if (payment.status == 1) {
-        trip.isPaid = true;
-        trip.fare.payment.method = `${payMethod.method}(${payMethod.cardDetails.cardMask})`;
-    }
-    trip.isCompleted = true;
-
-    trip.save();
-
-    res.status(200).send(x);
-})
-
+const getActiveTrip = async (passenger) => {
+    var start = new Date();
+    start.setHours(0, 0, 0, 0);
+    var end = new Date();
+    end.setHours(23, 59, 59, 999);
+    const activeTrip = await Trip.findOne({ created_at: { $gte: start, $lt: end }, isCompleted: false, passenger: passenger.id });
+    return activeTrip;
+}
 
 const getTripInfo = async (cords) => {
     const length = cords.length;
@@ -108,17 +116,18 @@ const getTripInfo = async (cords) => {
     const end = cords[length - 1];
     const result = await googleMaps.getDistance(start, end);
     const distance = result.distance.value;
-    let price = process.env.MINIMUM_FARE;
-    let additional_fare = process.env.ADDITIONAL_FARE;
+    let price = parseFloat(process.env.MINIMUM_FARE);
+    let additional_fare = parseFloat(process.env.ADDITIONAL_FARE);
     if (distance > 1000) {
-        price += Math.floor(distance / 1000) * additional_fare
+        price += Math.ceil((distance - 1000) / 1000) * additional_fare
     }
+    const end_location = await googleMaps.getAddress(end.lat, end.lng);
     const tripSummary = {
         fare: {
             text: `${price} LKR`,
             value: price
         },
-        trip: result
+        trip: { ..._.pick(result, ['distance', 'time']), end: end_location }
     }
     console.log(tripSummary);
     return tripSummary;

@@ -23,11 +23,13 @@ const busesSchema = new mongoose.Schema({
         },
         driver: {
             id: { type: String },
-            name: { type: String }
+            name: { type: String },
+            telephone: { type: String }
         },
         conductor: {
             id: { type: String },
-            name: { type: String }
+            name: { type: String },
+            telephone: { type: String }
         }
     }
 
