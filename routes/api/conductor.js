@@ -22,6 +22,7 @@ function validateConductor(conductor) {
 }
 
 router.post("/register", async (req, res) => {
+  console.log("Check");
   const { error } = validateConductor(req.body);
   if (error) return res.status(400).send({ error: error.details[0].message });
   console.log(req.body)

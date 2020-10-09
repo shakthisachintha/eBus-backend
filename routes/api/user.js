@@ -62,6 +62,57 @@ router.post("/register", async (req, res) => {
   }
 });
 
+router.post('/registerWeb',async (req, res) => {
+  const userEmailExists = await User.findOne({ email: req.body.email });
+  if (userEmailExists) return res.json({ state: false, msg: "This email already in use..!" })
+
+  const newUser = new User({
+    name : req.body.name,
+    password : req.body.password, 
+    email : req.body.email,
+    ownerMeta:{
+      address:req.body.address,
+      nic:req.body.nic,
+      contact:req.body.contact
+    },
+    userRole:{isOwner:true}
+  });
+
+  bcrypt.genSalt(
+    10,
+    await function (err, salt) {
+      if (err) {
+        console.log(err);
+      } else {
+        bcrypt.hash(newUser.password, salt, function (err, hash) {
+          newUser.password = hash;
+
+          if (err) {
+            throw err;
+          } else {
+            newUser
+              .save()
+              .then((req) => {
+                res.json({
+                  state: true,
+                  msg: "User Registered Successfully..!",
+                  data: newUser
+                });
+              })
+              .catch((err) => {
+                console.log(err);
+                res.json({
+                  state: false,
+                  msg: "User Registration Unsuccessfull..!",
+                });
+              });
+          }
+        });
+      }
+    }
+  );
+})
+
 
 router.post("/register/facebook", async (req, res) => {
   let user = await User.findOne({
@@ -106,6 +157,34 @@ router.get("/me", auth, async (req, res) => {
   }
 });
 
+router.post("/owner/update",auth,async(req,res)=>{
+  console.log("adas")
+  const { error } = validateUser(req.body);
+  if (error) return res.status(400).send({ error: error.details[0].message });
+  try {
+    let userEmail = await User.findOne({
+      email: req.body.email,
+    });
+   if(!userEmail) return res.status(400).send({ error: "User not found"});
+
+    const user = await User.findByIdAndUpdate(req.user.id, {
+      name: req.body.name,
+      email: req.body.email,
+      ownerMeta:{
+        address: req.body.address,
+        contact: req.body.contact,
+      },
+     
+    }).then(data => {
+      // console.log(data);
+      res.send("Updated");
+    })
+  }
+  catch (error) {
+    res.status(400).send(error.message);
+  }
+})
+
 router.post("/update", auth, async (req, res) => {
   const { error } = validateUser(req.body);
   if (error) return res.status(400).send({ error: error.details[0].message });
@@ -114,15 +193,15 @@ router.post("/update", auth, async (req, res) => {
       email: req.body.email,
     });
     if (userEmail) {
-      if(req.user.email!==req.body.email)
-      return res.status(403).send({ error: "User already exist in this email address!" });
+      if (req.user.email !== req.body.email)
+        return res.status(403).send({ error: "User already exist in this email address!" });
     }
     const user = await User.findByIdAndUpdate(req.user.id, {
-      name : req.body.name,
-      email : req.body.email,
-      address : req.body.address,
-      phoneNumber : req.body.phoneNumber
-    }).then(data=>{
+      name: req.body.name,
+      email: req.body.email,
+      address: req.body.address,
+      phoneNumber: req.body.phoneNumber
+    }).then(data => {
       // console.log(data);
       res.send("Updated");
     })
@@ -140,7 +219,7 @@ router.post("/changepassword", auth, async (req, res) => {
     const validPassword = await bcrypt.compare(req.body.oldpassword, user.password);
     if (!validPassword)
       return res.status(400).send({ error: "Invalid old password" });
-    else{
+    else {
       // user = new User(_.pick(req.body, ["oldpassword", "newpassword"]));
       let salt = await bcrypt.genSalt(10);
       user.password = await bcrypt.hash(req.body.newpassword, salt);
@@ -152,11 +231,11 @@ router.post("/changepassword", auth, async (req, res) => {
     res.status(400).send(error.message);
   }
 });
-router.get('/viewpassenger',auth, async(req,res)=>{
-  User.find({}).then(data=>{
-      res.send(data)
-  }).catch(err=>{
-      console.log(err)
+router.get('/viewpassenger', auth, async (req, res) => {
+  User.find({}).then(data => {
+    res.send(data)
+  }).catch(err => {
+    console.log(err)
   })
 })
 
