@@ -69,7 +69,6 @@ router.post("/update", auth, async (req, res) => {
     res.status(200).send();
 });
 
-
 router.post("/end", auth, async (req, res) => {
     const trip = await Trip.findOne({ _id: req.body.tripID });
     if (!trip) return res.status(401).message('Trip not found');
@@ -99,6 +98,12 @@ router.post("/end", auth, async (req, res) => {
     await trip.save();
 
     res.status(200).send(_.pick(trip, ["bus", "start", "end", "fare", "isPaid", "isCompleted", "distance"]));
+});
+
+router.get("/all-trips", auth, async (req, res) => {
+    const trips = await Trip.find({ passenger: req.user.id }).select('-cordes -distance -bus.conductor -bus.driver -fare.payment -end.geometry -start.geometry');
+    if (!trips) return res.status(404).send({ message: "Not found any trips" });
+    res.status(200).send(trips);
 });
 
 const getActiveTrip = async (passenger) => {
