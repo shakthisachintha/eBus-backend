@@ -73,8 +73,9 @@ router.post('/registerWeb',async (req, res) => {
     ownerMeta:{
       address:req.body.address,
       nic:req.body.nic,
-      contact:req.body.contact
+     
     },
+    phoneNumber:req.body.phoneNumber,
     userRole:{isOwner:true}
   });
 
@@ -148,7 +149,7 @@ router.post("/register/facebook", async (req, res) => {
 
 })
 
-router.get("/me", auth, async (req, res) => {
+router.get("/me",auth, async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select("-password");
     res.status(200).send(user);
@@ -171,9 +172,9 @@ router.post("/owner/update",auth,async(req,res)=>{
       name: req.body.name,
       email: req.body.email,
       ownerMeta:{
-        address: req.body.address,
-        contact: req.body.contact,
+        address: req.body.address,        
       },
+      phoneNumber: req.body.phoneNumber,
      
     }).then(data => {
       // console.log(data);
