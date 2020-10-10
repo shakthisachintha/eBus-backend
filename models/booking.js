@@ -9,8 +9,16 @@ const BookingSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    seat: {
-        type: Array,
+    // seat: {
+    //     type: Array,
+    //     required: true,
+    // },
+    numOfSeats: {
+        type: Number,
+        required: true,
+    },
+    bookOwner: {
+        type: String,
         required: true,
     },
 }, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } });
