@@ -56,14 +56,6 @@ router.get("/:id", async (req, res) => {
 });
 
 router.post("/bus-profile", async (req, res) => {
-    // try {
-    // const bus = await Bus.findById(req.body.id);
-
-    // res.status(200).send(bus);
-    // } catch (error) {
-    // res.status(400).send(error.message);
-    // }
-    console.log("router")
     Bus.findById(req.body.id)
     .then((result) => {
       res.json(result);

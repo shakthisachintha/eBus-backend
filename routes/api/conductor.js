@@ -7,6 +7,7 @@ const http = require('https');
 const fs = require('fs');
 const auth = require("../../middleware/auth");
 const { log } = require("console");
+const { response } = require("express");
 const router = express.Router();
 
 function validateConductor(conductor) {
@@ -55,9 +56,9 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.get('/getOne', async (req, res) => {
+router.post('/getOne', async (req, res) => {
   try {
-    let id = req.body['_id'];
+    let id = req.body.id;
     const conductor = await Conductor.findById(id);
     res.status(200).send(conductor);
   } catch (error) {
@@ -67,30 +68,42 @@ router.get('/getOne', async (req, res) => {
 
 
 router.post("/update", async (req, res) => { 
-  let id = req.body['_id'];
-  Conductor.findById(id, function (err, conductorDetail) {
-      if (!conductorDetail) {
-          res.status(404).send('data is not found');
+  let id = req.body.id;
+  const conductor = await Conductor.findById(id).then()
 
-      } else 
-      conductorDetail.name= req.body.name,
-
-      conductorDetail.save().then(conductorDetail => {
-              res.json('Conductor Details updated');
-          })
-              .catch(err => {
-                  res.status(400).send("Update not possible");
-              });
-      
-  });
+  // if(!req.body.name==""){
+  //     if(!(req.body.name==conductor.name)){
+  //       conductor.name=req.body.name;
+  //   }
+  // }
+  //console.log(conductor);
+  const updateDoc = {
+    name: req.body.name,
+    email: req.body.email,
+    nic: req.body.nic,
+    conductorNumber: req.body.conductorNumber,
+    address: req.body.address,
+    contact:req.body.contact
+  }
+  console.log(updateDoc);
+  Conductor.updateOne({_id:id},updateDoc).exec().then(data=>{
+    if(data){
+      res.status(200).json({"message":"success"});
+    }
+    
+  }).catch(err => {
+    console.log(err)
+    res.status(400).json({"message":"failed"});
+    
+  })
+  
 });
 
 router.post("/delete", async (req, res) => {
-  let id = req.body['_id'];
-  console.log(id);
+  let id = req.body.id;
   await Conductor.findByIdAndDelete(id)
       .then(conductors => {
-          console.log(conductors)
+        
           res.status(200).json({ 'conductors': 'conductors deleted successfully' });
       })
       .catch(err => {
@@ -99,5 +112,24 @@ router.post("/delete", async (req, res) => {
       });
 });
 
+router.post("/conductor-profile", async (req, res) => {
+  console.log(req.body)
+  // try {
+  // const bus = await Bus.findById(req.body.id);
+
+  // res.status(200).send(bus);
+  // } catch (error) {
+  // res.status(400).send(error.message);
+  // }
+  console.log("router")
+  Conductor.findById(req.body.id)
+  .then((result) => {
+    res.json(result);
+  })
+  .catch((err) => {
+    console.log(err);
+  });
+res.status(200);
+});
 
 module.exports = router;
