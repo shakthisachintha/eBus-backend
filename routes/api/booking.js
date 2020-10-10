@@ -23,7 +23,7 @@ router.post("/findBus", auth, async (req, res) => {
 router.get("/findBusById/:busId", auth, async (req, res) => {
     try {
         const bus = await Bus.findById(req.params.busId);
-        console.log(bus);
+        // console.log(bus);
         res.send(bus); 
         } catch (error) {
         res.status(400).send(error.message);
@@ -96,8 +96,31 @@ router.get("/bookSeat/:busId/:date/:numOfSeats", auth, async (req, res) => {
 router.get("/viewreservations/:userId", auth, async (req, res) => {
     try {
         const bookings = await Booking.find({bookOwner:req.params.userId});
-        console.log(bookings);
+        // console.log(bookings);
         res.send(bookings); 
+        } catch (error) {
+        res.status(400).send(error.message);
+        }
+});
+
+router.get("/viewreservationdetails/:resId", auth, async (req, res) => {
+    try {
+        // console.log(req.params.resId);
+        const booking = await Booking.findById(req.params.resId);
+        // console.log(booking);
+        res.send(booking); 
+        } catch (error) {
+        res.status(400).send(error.message);
+        }
+});
+
+router.get("/deleteres/:resId", auth, async (req, res) => {
+    try {
+        // console.log(req.params.resId);
+        const deleteRecord = await Booking.deleteOne({_id:req.params.resId});
+        console.log(deleteRecord);
+
+        res.send(deleteRecord); 
         } catch (error) {
         res.status(400).send(error.message);
         }
