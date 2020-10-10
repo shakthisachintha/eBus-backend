@@ -93,4 +93,14 @@ router.get("/bookSeat/:busId/:date/:numOfSeats", auth, async (req, res) => {
     }
 });
 
+router.get("/viewreservations/:userId", auth, async (req, res) => {
+    try {
+        const bookings = await Booking.find({bookOwner:req.params.userId});
+        console.log(bookings);
+        res.send(bookings); 
+        } catch (error) {
+        res.status(400).send(error.message);
+        }
+});
+
 module.exports = router;
