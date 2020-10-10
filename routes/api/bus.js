@@ -9,9 +9,18 @@ const router = express.Router();
 
 function validateBus(bus) {
     const schema = {
-        busNo: Joi.string().min(6).required().label("Bus Number"),
-        busRoute: Joi.string().required().label("Bus Route"),
-        busCapacity: Joi.number().max(65).required().label("Bus Capacity")
+        busNo: Joi.string().max(6).required().label("Bus Number"),
+        routeNo: Joi.string().max(5).required().label("Route Number"),
+        startPoint: Joi.string().required().label("Start Point"),
+        endPoint: Joi.string().required().label("End Point"),
+        busCapacity: Joi.number().max(65).required().label("Bus Capacity"),
+        isReserveEnable: Joi.boolean(),
+        forwardStartPoint: Joi.string().required().label("Start Point"),
+        forwardDepartTime: Joi.string().required().label("Departure Time"),
+        backwardStartPoint: Joi.string().required().label("Start Point"),
+        backwardDepartTime: Joi.string().required().label("Departure Time"),
+        noOfReservation: Joi.number().max(20).required().label("Bus Capacity"),
+
     };
     return Joi.validate(bus, schema);
 }
@@ -57,15 +66,17 @@ router.post("/register", async (req, res) => {
 
     let bus = new Bus();
     bus.busNo = req.body.busNo.toUpperCase();
-    bus.busRoute = req.body.busRoute;
-    // bus.startPoint=req.body.startPoint.toUpperCase();
-    // bus.endPoint=req.body.endPoint.toUpperCase();
+    bus.routeNo = req.body.busRoute;
+    bus.startPoint=req.body.startPoint.toUpperCase();
+    bus.endPoint=req.body.endPoint.toUpperCase();
     bus.busCapacity = req.body.busCapacity;
-    // bus.personals.owner = _.pick(req.user, ["name", "email", "id"]);
-    // bus.route.forward.start = req.body.start.toUpperCase();
-    // bus.route.forward.departureTime = req.body.startDepartureTime;
-    // bus.route.backward.start = req.body.end.toUpperCase();
-    // bus.route.backward.departureTime = req.body.endDepartureTime;
+    bus.isReserveEnable = req.body.isReserveEnable;
+    bus.reserveRoute.forward.forwardStartPoint = req.body.forwardStartPoint.toUpperCase();
+    bus.reserveRoute.forward.forwardDepartTime = req.body.startDepartureTime;
+    bus.reserveRoute.backward.backwardStartPoint = req.body.backwardStartPoint.toUpperCase();
+    bus.reserveRoute.backward.departureTime = req.body.endDepartureTime;
+    bus.personals.owner = _.pick(req.user, ["name", "email", "id"]);
+
     try {
         await bus.save()
         res.status(200).send(bus);
