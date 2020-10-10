@@ -2,6 +2,9 @@ const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 const _ = require("lodash");
 
+const Transaction = require("./transaction");
+const payHere = require('../api/payhere');
+
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -46,10 +49,10 @@ const userSchema = new mongoose.Schema({
       type: String,
       required: function () { return this.userRole.isOwner }
     },
-    contactNo:{
-      type:String,
-      required: function(){return this.userRole.isOWner}
-    },      
+    contactNo: {
+      type: String,
+      required: function () { return this.userRole.isOWner }
+    },
 
   },
   image: {
@@ -60,6 +63,11 @@ const userSchema = new mongoose.Schema({
   },
   phoneNumber: {
     type: String,
+  },
+  wallet: {
+    prepaidBalance: { type: Number, default: 0 },
+    debt: { type: Number, default: 0 },
+    isPrimary: { type: Boolean, default: false }
   },
   paymentMethods: [{
     method: {
@@ -107,7 +115,7 @@ userSchema.methods.generateAuthToken = function () {
 
 userSchema.methods.setPrimaryPayMethod = async function (methodID) {
   var methods = this.paymentMethods;
-
+  this.wallet.isPrimary = false;
   methods.forEach(method => {
     if (method.isPrimary) {
       method.isPrimary = false;
@@ -115,21 +123,104 @@ userSchema.methods.setPrimaryPayMethod = async function (methodID) {
     }
   });
 
-  methods.forEach(method => {
-    if (method._id == methodID) {
-      method.isPrimary = true
-    }
-  });
+  if (methodID == "wallet") {
+    this.wallet.isPrimary = true;
+  } else {
+    methods.forEach(method => {
+      if (method._id == methodID) {
+        method.isPrimary = true
+      }
+    });
+  }
 
   this.paymentMethods = methods;
   await this.save();
   return await this.getPrimaryPayMethod();
 }
 
+userSchema.methods.chargeFromWallet = async function (item, amount, reason) {
+  let transaction = {
+    userId: this._id,
+    amount: { value: amount, text: `${amount} LKR` },
+    item,
+    reason,
+  }
+  if (this.wallet.prepaidBalance >= amount) {
+    this.wallet.prepaidBalance = this.wallet.prepaidBalance - amount;
+    this.save();
+    const meta = {
+      method: "Wallet",
+      description: "Charged from prepaid balance"
+    };
+    transaction = { ...transaction, status: "success", status_code: 2, meta }
+  } else {
+    this.wallet.prepaidBalance = 0
+    this.wallet.debt = this.wallet.prepaidBalance - amount;
+    this.save();
+    const meta = {
+      method: "Wallet",
+      description: "Failed to charge from prepaid balance"
+    };
+    transaction = { ...transaction, status: "failed", status_code: -2, meta }
+  }
+
+  let transaction_record = new Transaction(transaction);
+  transaction_record.save();
+  return transaction;
+}
+
+userSchema.methods.chargeFromPrimaryMethod = async function (item, amount, reason) {
+  let method = this.getPrimaryPayMethod();
+
+  let transaction = {
+    userId: this._id,
+    amount: { value: amount, text: `${amount} LKR` },
+    item,
+    reason,
+  }
+
+  if (!method) method = { method: "wallet" };
+
+  // Pay from prepaid wallet
+  if (method.method == "wallet") {
+    return this.chargeFromPrimaryMethod(item, amount, reason)
+  }
+  // Pay from saved card
+  else {
+    const payment = await payHere.charge({
+      amount: amount,
+      items: item,
+      order_id: reason.id,
+      customer_token: method.token
+    });
+    const meta = {
+      method: method.method,
+      cardDetails: method,
+      description: payment.data.status_message,
+      paymentID: payment.data.payment_id
+    }
+    if (payment.data.status_code == 2) {
+      transaction = { ...transaction, status: "success", status_code: 2, meta }
+    }
+    else {
+      transaction = { ...transaction, status: "failed", status_code: payment.data.status_code, meta }
+    }
+  }
+
+  let transaction_record = new Transaction(transaction);
+  transaction_record.save();
+  return transaction;
+}
+
 userSchema.methods.getPrimaryPayMethod = function () {
 
   var methods = this.paymentMethods;
   var primaryMethod = null;
+
+  if (this.wallet.isPrimary) {
+    console.log({ method: "wallet", ...this.wallet });
+    return { method: "wallet", ...this.wallet };
+  }
 
   methods.forEach(method => {
     if (method.isPrimary) {
