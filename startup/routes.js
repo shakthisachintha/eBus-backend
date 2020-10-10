@@ -6,6 +6,7 @@ const apiPayementRoutes = require("../routes/api/payments");
 const conductorRoutes = require("../routes/api/conductor")
 const BusRoutes = require("../routes/api/bus")
 const TripRoutes = require("../routes/api/trip")
+const AdminRoutes = require("../routes/api/admin");
 // const SummaryReportRoutes = require("../routes/api/report");
 const express = require("express");
 const error = require("../middleware/error");
@@ -21,6 +22,7 @@ module.exports = function (app) {
     app.use("/api/payment", apiPayementRoutes);
     app.use("/api/conductor", conductorRoutes);
     app.use("/payments", paymentRoutes);
+    app.use("/api/admin", AdminRoutes);
     app.use(error);
     app.use("/images", express.static('storage/public'));
     app.use("/api/bus",BusRoutes);

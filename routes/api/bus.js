@@ -16,7 +16,8 @@ function validateBus(bus) {
     return Joi.validate(bus, schema);
 }
 
-router.get("/", auth, owner, async (req, res) => {
+// router.get("/", auth, owner, async (req, res) => {
+router.get("/", async (req, res) => {
     try {
         const bus = await Bus.find();
         res.status(200).send(bus);
@@ -29,7 +30,7 @@ router.get("/:id", auth, owner, async (req, res) => {
     try {
         console.log(req.params.id)
         const bus = await Bus.findById(req.body.id); // req.params.id
-        // const bus = Bus.find(personals.owner.id:req.params.id);
+        // const user = Bus.find(personals.owner.id:req.params.id);
         res.status(200).send(bus);
     } catch (error) {
         res.status(400).send(error.message);
@@ -49,15 +50,22 @@ router.post("/bus-profile", async (req, res) => {
 });
 
 
-router.post("/register", auth, owner, async (req, res) => {
+// router.post("/register", auth, owner, async (req, res) => {
+router.post("/register", async (req, res) => {
     const { error } = validateBus(req.body);
     if (error) return res.status(400).send({ error: error.details[0].message });
 
     let bus = new Bus();
     bus.busNo = req.body.busNo.toUpperCase();
     bus.busRoute = req.body.busRoute;
+    // bus.startPoint=req.body.startPoint.toUpperCase();
+    // bus.endPoint=req.body.endPoint.toUpperCase();
     bus.busCapacity = req.body.busCapacity;
-    bus.personals.owner = _.pick(req.user, ["name", "email", "id"]);
+    // bus.personals.owner = _.pick(req.user, ["name", "email", "id"]);
+    // bus.route.forward.start = req.body.start.toUpperCase();
+    // bus.route.forward.departureTime = req.body.startDepartureTime;
+    // bus.route.backward.start = req.body.end.toUpperCase();
+    // bus.route.backward.departureTime = req.body.endDepartureTime;
     try {
         await bus.save()
         res.status(200).send(bus);
@@ -96,7 +104,7 @@ router.post("/delete", auth, owner, async (req, res) => {
         })
         .catch(err => {
             console.log("deleted")
-            res.status(400).send('deleting bus failed');
+            res.status(400).send('Deleting bus failed');
         });
 });
 
