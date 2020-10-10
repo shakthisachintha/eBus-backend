@@ -17,13 +17,13 @@ const getAddress = async (lat, lng) => {
     if (!resp.ok) return null;
     const { results } = resp.data;
 
-    const dummy_result = {
-        formatted_address: 'Kalegana Bus Stop, Galle 80000, Sri Lanka',
-        place_id: 'ChIJp24Q--Nz4ToRDUd2M133pVs',
-        geometry: { location: { lat: 6.0589705, lng: 80.203768 } }
+    const location = {
+        place_name: results[0].address_components[0].long_name,
+        formatted_address: results[0].formatted_address,
+        cordes: results[0].geometry.location
     }
-    // return dummy_result;
-    return _.pick(results[0], ["formatted_address", "place_id", "geometry.location"]);
+
+    return location;
 };
 
 // https://maps.googleapis.com/maps/api/distancematrix/json?mode=transit&origins=6.066527,80.2240319&destinations=6.063387,%2080.215142&key=API_KEY
