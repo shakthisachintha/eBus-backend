@@ -5,6 +5,7 @@ const busesSchema = new mongoose.Schema({
     busNo: {
         type: String,
         required: true,
+        unique: true
     },
     busRoute: {
         type: String,
@@ -14,6 +15,23 @@ const busesSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    personals: {
+        owner: {
+            id: { type: String },
+            name: { type: String },
+            email: { type: String }
+        },
+        driver: {
+            id: { type: String },
+            name: { type: String },
+            telephone: { type: String }
+        },
+        conductor: {
+            id: { type: String },
+            name: { type: String },
+            telephone: { type: String }
+        }
+    }
 
 }, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } });
 

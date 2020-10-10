@@ -32,12 +32,7 @@ function validatePassword(user) {
   };
   return Joi.validate(user, schema);
 }
-// router.get(
-//   '/',
-//   (req,res)=>{
-//     res.send('USER');
-//   }
-// )
+
 router.post("/register", async (req, res) => {
   const { error } = validateUser(req.body);
   if (error) return res.status(400).send({ error: error.details[0].message });
@@ -75,9 +70,12 @@ router.post('/registerWeb',async (req, res) => {
     name : req.body.name,
     password : req.body.password, 
     email : req.body.email,
-    contact: req.body.contact,
-    address: req.body.address,
-    nic: req.body.nic
+    ownerMeta:{
+      address:req.body.address,
+      nic:req.body.nic,
+      contact:req.body.contact
+    },
+    userRole:{isOwner:true}
   });
 
   console.log(newUser);
@@ -162,6 +160,34 @@ router.get("/me", auth, async (req, res) => {
     res.status(400).send(error.message);
   }
 });
+
+router.post("/owner/update",auth,async(req,res)=>{
+  console.log("adas")
+  const { error } = validateUser(req.body);
+  if (error) return res.status(400).send({ error: error.details[0].message });
+  try {
+    let userEmail = await User.findOne({
+      email: req.body.email,
+    });
+   if(!userEmail) return res.status(400).send({ error: "User not found"});
+
+    const user = await User.findByIdAndUpdate(req.user.id, {
+      name: req.body.name,
+      email: req.body.email,
+      ownerMeta:{
+        address: req.body.address,
+        contact: req.body.contact,
+      },
+     
+    }).then(data => {
+      // console.log(data);
+      res.send("Updated");
+    })
+  }
+  catch (error) {
+    res.status(400).send(error.message);
+  }
+})
 
 router.post("/update", auth, async (req, res) => {
   const { error } = validateUser(req.body);
