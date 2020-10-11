@@ -10,7 +10,14 @@ const router = express.Router();
 router.post("/methods", auth, async (req, res) => {
     try {
         const user = await User.findById(req.user.id);
-        const payMethods = _.pick(user, ['paymentMethods']);
+        let payMethods = _.pick(user, ['paymentMethods']);
+        const wallet = {
+            method: "Wallet",
+            token: user.wallet.prepaidBalance,
+            _id: user.id,
+            isPrimary: user.wallet.isPrimary
+        }
+        payMethods.paymentMethods.push(wallet);
         res.status(200).send(payMethods);
     } catch (error) {
         res.status(400).send(error.message);
@@ -32,11 +39,28 @@ router.post("/get-primary-method", auth, async (req, res) => {
     return res.status(404).send({ error: "Primary payment method not found" });
 });
 
+
+router.post("/remove-method", auth, async (req, res) => {
+    const user = await User.findById(req.user.id);
+    const methods = user.paymentMethods;
+    let new_methods = [];
+    methods.forEach(method => {
+        if (method._id != req.body.methodID) {
+            new_methods.push(method);
+        }
+    });
+    user.paymentMethods = new_methods;
+    user.save();
+    res.send({ message: "Payment method successfully removed" });
+});
+
+
 router.get("/wallet", auth, async (req, res) => {
     const user = await User.findById(req.user.id);
     if (user) return res.send(user.wallet);
     return res.status(404).send({ error: "User not found" });
 });
+
 
 router.post("/wallet-recharge", auth, async (req, res) => {
 

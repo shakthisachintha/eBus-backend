@@ -35,18 +35,18 @@ router.post("/register", async (req, res) => {
     nic: req.body.nic,
     conductorNumber: req.body.conductorNumber,
     address: req.body.address,
-    contact:req.body.contact,
-    password:req.body.password
+    contact: req.body.contact,
+    password: req.body.password
   })
 
-  
+
   conductor.save()
-  .then(conductors => {
-    res.status(200).json({'conductors': 'Added successfully'});
-})
-.catch(err => {
-    res.status(400).send('Failed Adding Conductor');
-});
+    .then(conductors => {
+      res.status(200).json({ 'conductors': 'Added successfully' });
+    })
+    .catch(err => {
+      res.status(400).send('Failed Adding Conductor');
+    });
 
 });
 
@@ -65,12 +65,12 @@ router.post('/getOne', async (req, res) => {
     const conductor = await Conductor.findById(id);
     res.status(200).send(conductor);
   } catch (error) {
-  res.status(400).send(error.message);
+    res.status(400).send(error.message);
   }
 });
 
 
-router.post("/update", async (req, res) => { 
+router.post("/update", async (req, res) => {
   let id = req.body.id;
   const conductor = await Conductor.findById(id).then()
 
@@ -86,34 +86,34 @@ router.post("/update", async (req, res) => {
     nic: req.body.nic,
     conductorNumber: req.body.conductorNumber,
     address: req.body.address,
-    contact:req.body.contact,
-    password:req.body.password
+    contact: req.body.contact,
+    password: req.body.password
   }
   console.log(updateDoc);
-  Conductor.updateOne({_id:id},updateDoc).exec().then(data=>{
-    if(data){
-      res.status(200).json({"message":"success"});
+  Conductor.updateOne({ _id: id }, updateDoc).exec().then(data => {
+    if (data) {
+      res.status(200).json({ "message": "success" });
     }
-    
+
   }).catch(err => {
     console.log(err)
-    res.status(400).json({"message":"failed"});
-    
+    res.status(400).json({ "message": "failed" });
+
   })
-  
+
 });
 
 router.post("/delete", async (req, res) => {
   let id = req.body.id;
   await Conductor.findByIdAndDelete(id)
-      .then(conductors => {
-        
-          res.status(200).json({ 'conductors': 'conductors deleted successfully' });
-      })
-      .catch(err => {
-          console.log("not deleted")
-          res.status(400).send('deleting conductors failed');
-      });
+    .then(conductors => {
+
+      res.status(200).json({ 'conductors': 'conductors deleted successfully' });
+    })
+    .catch(err => {
+      console.log("not deleted")
+      res.status(400).send('deleting conductors failed');
+    });
 });
 
 router.post("/conductor-profile", async (req, res) => {
@@ -127,14 +127,13 @@ router.post("/conductor-profile", async (req, res) => {
   // }
   console.log("router")
   Conductor.findById(req.body.id)
-  .then((result) => {
-    res.json(result);
-  })
-  .catch((err) => {
-    console.log(err);
-  });
-res.status(200);
+    .then((result) => {
+      res.json(result);
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+  res.status(200);
 });
 
 module.exports = router;
-git

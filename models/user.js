@@ -49,17 +49,10 @@ const userSchema = new mongoose.Schema({
       type: String,
       required: function () { return this.userRole.isOwner }
     },
-<<<<<<< HEAD
-    // contactNo:{
-    //   type:String,
-    //   required: function(){return this.userRole.isOWner}
-    // },      
-=======
     contactNo: {
       type: String,
       required: function () { return this.userRole.isOWner }
     },
->>>>>>> e18ba25d2bee6c1b98ec50969539abd023d1fc64
 
   },
   image: {
@@ -108,7 +101,7 @@ userSchema.pre('save', function (next) {
 });
 
 userSchema.methods.generateAuthToken = function () {
-  const { _id, userRole, name, email, image,phoneNumber,ownerMeta } = this;
+  const { _id, userRole, name, email, image, phoneNumber, ownerMeta } = this;
   const token = jwt.sign({
     id: _id,
     isAdmin: userRole.isAdmin,
@@ -118,7 +111,7 @@ userSchema.methods.generateAuthToken = function () {
     image,
     phoneNumber,
     ownerMeta,
-    
+
   }, process.env.JWT_PRIVATE_KEY);
   return token;
 };
