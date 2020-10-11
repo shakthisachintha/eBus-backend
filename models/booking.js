@@ -21,6 +21,26 @@ const BookingSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    startPoint: {
+        type: String,
+        required: true,
+    },
+    endPoint: {
+        type: String,
+        required: true,
+    },
+    busNo: {
+        type: String,
+        required: true,
+    },
+    bookOwnerName: {
+        type: String,
+        required: true,
+    },
+    bookOwnerPhoto: {
+        type: String,
+        required: true,
+    },
 }, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } });
 
 

@@ -1,6 +1,7 @@
 const express = require("express");
 const Bus = require("../../models/bus");
 const Booking = require("../../models/booking");
+const User = require("../../models/User");
 
 const Joi = require("joi");
 const _ = require("lodash");
@@ -12,7 +13,7 @@ const router = express.Router();
 
 router.post("/findBus", auth, async (req, res) => {
     try {
-        const bus = await Bus.find({startPoint:req.body.begining.toUpperCase(),endPoint:req.body.destination.toUpperCase()});
+        const bus = await Bus.find({isReservationEnable:"true",startPoint:req.body.begining.toUpperCase(),endPoint:req.body.destination.toUpperCase()});
         // console.log(bus);
         res.send(bus); 
         } catch (error) {
@@ -67,10 +68,10 @@ router.get("/getBusSeat/:busId/:date", auth, async (req, res) => {
 });
 
 
-router.get("/bookSeat/:busId/:date/:numOfSeats", auth, async (req, res) => {
+router.get("/bookSeat/:busId/:date/:numOfSeats/:startPoint/:endPoint/:busNo", auth, async (req, res) => {
     try {
         // console.log(req.params);
-        booking = new Booking({ busId: req.params.busId, date: req.params.date, numOfSeats: req.params.numOfSeats, bookOwner:req.user.id });
+        booking = new Booking({ busId: req.params.busId, date: req.params.date, numOfSeats: req.params.numOfSeats, bookOwner:req.user.id, startPoint: req.params.startPoint, endPoint: req.params.endPoint, busNo: req.params.busNo, bookOwnerName:req.user.name,bookOwnerPhoto:req.user.image});
         console.log(booking);
         result = await booking.save();
         if (!result) return res.status(400).send({ error: "Something went wrong!" });
@@ -118,9 +119,21 @@ router.get("/deleteres/:resId", auth, async (req, res) => {
     try {
         // console.log(req.params.resId);
         const deleteRecord = await Booking.deleteOne({_id:req.params.resId});
-        console.log(deleteRecord);
+        // console.log(deleteRecord);
 
         res.send(deleteRecord); 
+        } catch (error) {
+        res.status(400).send(error.message);
+        }
+});
+
+router.get("/viewreservedpassengers/:date/:conductorid", async (req, res) => {
+    try {
+        console.log(req.params.conductorid);
+        const conductor = await User.findById(req.params.conductorid);
+        // console.log(conductor.busNo);
+        const bookings = await Booking.find({busNo:conductor.busNo, date:req.params.date});
+        res.send(bookings); 
         } catch (error) {
         res.status(400).send(error.message);
         }

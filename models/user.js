@@ -56,6 +56,9 @@ const userSchema = new mongoose.Schema({
   phoneNumber: {
     type: String,
   },
+  busNo: {
+    type: String,
+  },
   paymentMethods: [{
     method: {
       type: String,
