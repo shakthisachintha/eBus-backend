@@ -9,14 +9,24 @@ const router = express.Router();
 
 function validateBus(bus) {
     const schema = {
-        busNo: Joi.string().min(6).required().label("Bus Number"),
-        busRoute: Joi.string().required().label("Bus Route"),
-        busCapacity: Joi.number().max(65).required().label("Bus Capacity")
+        busNo: Joi.string().max(6).required().label("Bus Number"),
+        routeNo: Joi.string().max(5).required().label("Route Number"),
+        startPoint: Joi.string().required().label("Start Point"),
+        endPoint: Joi.string().required().label("End Point"),
+        busCapacity: Joi.number().max(65).required().label("Bus Capacity"),
+        isReserveEnable: Joi.boolean(),
+        forwardStartPoint: Joi.string().required().label("Start Point"),
+        forwardDepartTime: Joi.string().required().label("Departure Time"),
+        backwardStartPoint: Joi.string().required().label("Start Point"),
+        backwardDepartTime: Joi.string().required().label("Departure Time"),
+        noOfReservation: Joi.number().max(20).required().label("Bus Capacity"),
+
     };
     return Joi.validate(bus, schema);
 }
 
-router.get("/", auth, owner, async (req, res) => {
+// router.get("/", auth, owner, async (req, res) => {
+router.get("/", async (req, res) => {
     try {
         const bus = await Bus.find();
         res.status(200).send(bus);
@@ -28,7 +38,8 @@ router.get("/", auth, owner, async (req, res) => {
 router.get("/:id", auth, owner, async (req, res) => {
     try {
         console.log(req.params.id)
-        const bus = await Bus.findById(req.body.id);
+        const bus = await Bus.findById(req.body.id); // req.params.id
+        // const user = Bus.find(personals.owner.id:req.params.id);
         res.status(200).send(bus);
     } catch (error) {
         res.status(400).send(error.message);
@@ -48,15 +59,24 @@ router.post("/bus-profile", async (req, res) => {
 });
 
 
-router.post("/register", auth, owner, async (req, res) => {
+// router.post("/register", auth, owner, async (req, res) => {
+router.post("/register", async (req, res) => {
     const { error } = validateBus(req.body);
     if (error) return res.status(400).send({ error: error.details[0].message });
 
     let bus = new Bus();
     bus.busNo = req.body.busNo.toUpperCase();
-    bus.busRoute = req.body.busRoute;
+    bus.routeNo = req.body.busRoute;
+    bus.startPoint=req.body.startPoint.toUpperCase();
+    bus.endPoint=req.body.endPoint.toUpperCase();
     bus.busCapacity = req.body.busCapacity;
+    bus.isReserveEnable = req.body.isReserveEnable;
+    bus.reserveRoute.forward.forwardStartPoint = req.body.forwardStartPoint.toUpperCase();
+    bus.reserveRoute.forward.forwardDepartTime = req.body.startDepartureTime;
+    bus.reserveRoute.backward.backwardStartPoint = req.body.backwardStartPoint.toUpperCase();
+    bus.reserveRoute.backward.departureTime = req.body.endDepartureTime;
     bus.personals.owner = _.pick(req.user, ["name", "email", "id"]);
+
     try {
         await bus.save()
         res.status(200).send(bus);
@@ -64,7 +84,6 @@ router.post("/register", auth, owner, async (req, res) => {
         if (error.code === 11000)
             res.status(403).send({ error: "Bus already exists" });
     }
-
 });
 
 
@@ -96,7 +115,7 @@ router.post("/delete", auth, owner, async (req, res) => {
         })
         .catch(err => {
             console.log("deleted")
-            res.status(400).send('deleting bus failed');
+            res.status(400).send('Deleting bus failed');
         });
 });
 
