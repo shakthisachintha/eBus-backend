@@ -10,6 +10,7 @@ const { log } = require("console");
 const { response } = require("express");
 const router = express.Router();
 
+//validate conductor details before doing the certaing queries
 function validateConductor(conductor) {
   const schema = {
     name: Joi.string().min(10).max(255).required().label("Name"),
@@ -18,6 +19,7 @@ function validateConductor(conductor) {
     conductorNumber: Joi.string().required().label("Conductor NO"),
     address: Joi.string().min(10).max(255).required().label("Address"),
     contact: Joi.string().min(8).required().label("Contact"),
+    password: Joi.string().min(8).required().label("password"),
   };
   return Joi.validate(conductor, schema);
 }
@@ -33,7 +35,8 @@ router.post("/register", async (req, res) => {
     nic: req.body.nic,
     conductorNumber: req.body.conductorNumber,
     address: req.body.address,
-    contact:req.body.contact
+    contact:req.body.contact,
+    password:req.body.password
   })
 
   
@@ -83,7 +86,8 @@ router.post("/update", async (req, res) => {
     nic: req.body.nic,
     conductorNumber: req.body.conductorNumber,
     address: req.body.address,
-    contact:req.body.contact
+    contact:req.body.contact,
+    password:req.body.password
   }
   console.log(updateDoc);
   Conductor.updateOne({_id:id},updateDoc).exec().then(data=>{
