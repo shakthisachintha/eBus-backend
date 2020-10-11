@@ -63,8 +63,8 @@ router.post("/register", async (req, res) => {
 });
 
 router.post('/registerWeb',async (req, res) => {
-  const userEmailExists = await User.findOne({ email: req.body.email });
-  if (userEmailExists) return res.json({ state: false, msg: "This email already in use..!" })
+  // const userEmailExists = await User.findOne({ email: req.body.email });
+  // if (userEmailExists) return res.json({ state: false, msg: "This email already in use..!" })
 
   const newUser = new User({
     name : req.body.name,
@@ -78,6 +78,8 @@ router.post('/registerWeb',async (req, res) => {
     phoneNumber:req.body.phoneNumber,
     userRole:{isOwner:true}
   });
+
+  console.log(newUser);
 
   bcrypt.genSalt(
     10,
@@ -113,6 +115,8 @@ router.post('/registerWeb',async (req, res) => {
     }
   );
 })
+
+
 
 
 router.post("/register/facebook", async (req, res) => {

@@ -27,6 +27,9 @@ function updateRequestValidate(trip) {
 }
 
 router.post("/new", auth, async (req, res) => {
+    const user = await User.findById(req.user.id);
+    if (user.wallet.debt > 50) return res.status(403).send({ message: "Trip creation abort due to debts" });
+
     const activeTrip = await getActiveTrip(req.user);
     if (activeTrip) return res.status(403).send({ message: "There exist another active trip" })
 
@@ -65,17 +68,32 @@ router.post("/end", auth, async (req, res) => {
     trip.end.time = Date.now();
     const user = await User.findById(req.user.id);
     const tripInfo = await getTripInfo(trip);
-    const payMethod = user.getPrimaryPayMethod();
-    const payment = await payHere.charge({
-        amount: tripInfo.fare.value,
-        items: `Bus fare ${trip.id}`,
-        order_id: trip.id,
-        customer_token: payMethod.token
-    });
+
+    const tripSummary = {
+        id: trip._id,
+        passenger: trip.passenger,
+        bus: trip.bus.number
+    }
+
+    const payment = await user.chargeFromPrimaryMethod("Bus fare", tripInfo.fare.value, tripSummary);
+    console.log(payment);
     trip.fare.amount = tripInfo.fare
-    if (payment.status == 1) {
+    if (payment.status_code == 2) {
         trip.isPaid = true;
-        trip.fare.payment.method = `${payMethod.method}(${payMethod.cardDetails.cardMask})`;
+        trip.fare.payment.method = `${payment.meta.method} (${payment.meta.cardDetails.cardDetails.cardMask})`;
+    }
+
+    //we try to recover the payment from wallet prepaid balance 
+    else {
+        if (user.wallet.prepaidBalance > payment.amount.value) {
+            const wallet_payment = await user.chargeFromWallet("Bus fare", tripInfo.fare.value, tripSummary);
+            if (wallet_payment.status_code == 2) {
+                trip.isPaid = true;
+                trip.fare.payment.method = `${payment.meta.method} (${payment.meta.cardDetails.cardDetails.cardMask})`;
+            }
+        } else {
+            wallet.debt = wallet.debt + payment.amount.value
+        }
     }
 
     trip.distance = {

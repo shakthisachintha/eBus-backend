@@ -55,16 +55,16 @@ router.post("/owner/login", async (req, res) => {
   const { error } = validateUser(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
-  let user = await User.findOne({ email: req.body.email});
+  let user = await User.findOne({ email: req.body.email });
   if (!user || !user.userRole.isOwner) return res.status(400).send({ error: "Invalid username or password" });
-  
+
 
   const validPassword = await bcrypt.compare(req.body.password, user.password);
   if (!validPassword)
     return res.status(400).send({ error: "Invalid username or password" });
 
   const token = user.generateAuthToken();
-  return res.header("x-auth-token", token).header('access-control-expose-headers','x-auth-token').send(_.pick(user, ['name', 'email', 'id']));
+  return res.header("x-auth-token", token).header('access-control-expose-headers', 'x-auth-token').send(_.pick(user, ['name', 'email', 'id']));
 });
 
 
@@ -85,15 +85,6 @@ router.post("/conductor/login", async (req, res) => {
 });
 
 router.post("/forgetpassword", async (req, res) => {
-  // let userEmail = await User.findOne({ email: req.body.email });
-  // if (!userEmail) return res.status(400).send({ error: "Invalid email address" });
-  // const code = Math.floor(100000 + Math.random() * 900000);
-  // console.log(code);
-  // const user = await User.findOneAndUpdate({ email: req.body.email }, {
-  //   resetCode: code
-  // }).then(()=>{
-  //   res.status(200).send("Reset Code Sent");
-  // }) 
   try {
     let user = await User.findOne({ email: req.body.email });
     if (!user) return res.status(400).send({ error: "Invalid email address" });
