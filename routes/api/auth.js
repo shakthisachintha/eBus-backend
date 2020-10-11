@@ -73,8 +73,7 @@ router.post("/conductor/login", async (req, res) => {
   const { error } = validateUser(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
-  let user = await User.findOne({ email: req.body.email, isConductor: true });
-
+  let user = await User.findOne({ email: req.body.email, "userRole.isConductor": true });
   if (!user) return res.status(400).send({ error: "Invalid username or password" });
 
   const validPassword = await bcrypt.compare(req.body.password, user.password);

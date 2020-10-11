@@ -64,6 +64,8 @@ const userSchema = new mongoose.Schema({
   phoneNumber: {
     type: String,
   },
+  busNo: {
+    type: String,
   wallet: {
     prepaidBalance: { type: Number, default: 0 },
     debt: { type: Number, default: 0 },
