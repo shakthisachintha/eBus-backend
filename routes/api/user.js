@@ -244,4 +244,17 @@ router.get('/viewpassenger', auth, async (req, res) => {
   })
 })
 
+router.get("/", async (req, res) => {
+  try {
+    const user = await User.find({"userRole.isAdmin": "false",
+    "userRole.isOwner": "false",
+    "userRole.isConductor": "false",
+
+  });
+    res.status(200).send(user);
+  } catch (error) {
+    res.status(400).send(error.message);
+  }
+});
+
 module.exports = router;

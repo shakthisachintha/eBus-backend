@@ -30,6 +30,10 @@ const conductorSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  password: {
+    type: String,
+    required: true,
+  },
   authProvider: {
     type: String,
     default: "app"
@@ -37,7 +41,7 @@ const conductorSchema = new mongoose.Schema({
 }, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } });
 
 conductorSchema.methods.generateAuthToken = function () {
-  const { _id, name, email, nic, conductorNumber, address, contact } = this;
+  const { _id, name, email, nic, conductorNumber, address, contact,password } = this;
   const token = jwt.sign({
     id: _id,
     name,
@@ -45,7 +49,8 @@ conductorSchema.methods.generateAuthToken = function () {
     nic,
     conductorNumber,
     address,
-    contact
+    contact,
+    password
   }, process.env.JWT_PRIVATE_KEY);
   return token;
 };
