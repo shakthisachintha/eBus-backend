@@ -2,8 +2,12 @@ require("./startup/config")();
 
 const express = require("express");
 const app = express();
+const cors = require("cors");
 
 const winston = require("winston");
+
+app.use(express.json({extended: false}));
+app.use(cors({origin:true,credentials:true}));
 
 require("./startup/logger")();
 require("./startup/mongo")();

@@ -2,17 +2,22 @@ const express = require("express");
 const auth = require("../../middleware/auth");
 const User = require("../../models/User");
 const _ = require("lodash");
-const axios = require('axios').default;
-const qs = require('querystring');
 const { chargeAPI, authAPI } = require('../../api/payhere');
-const { request } = require("http");
+
 
 const router = express.Router();
 
 router.post("/methods", auth, async (req, res) => {
     try {
         const user = await User.findById(req.user.id);
-        const payMethods = _.pick(user, ['paymentMethods']);
+        let payMethods = _.pick(user, ['paymentMethods']);
+        const wallet = {
+            method: "Wallet",
+            token: user.wallet.prepaidBalance,
+            _id: user.id,
+            isPrimary: user.wallet.isPrimary
+        }
+        payMethods.paymentMethods.push(wallet);
         res.status(200).send(payMethods);
     } catch (error) {
         res.status(400).send(error.message);
@@ -30,8 +35,70 @@ router.post("/set-primary-method", auth, async (req, res) => {
 router.post("/get-primary-method", auth, async (req, res) => {
     const user = await User.findById(req.user.id);
     const method = user.getPrimaryPayMethod();
-    if (method) return res.send(method);
+    if (method) return res.send(_.pick(method, ['_id', 'method', 'cardDetails']));
     return res.status(404).send({ error: "Primary payment method not found" });
+});
+
+
+router.post("/remove-method", auth, async (req, res) => {
+    const user = await User.findById(req.user.id);
+    const methods = user.paymentMethods;
+    let new_methods = [];
+    methods.forEach(method => {
+        if (method._id != req.body.methodID) {
+            new_methods.push(method);
+        }
+    });
+    user.paymentMethods = new_methods;
+    user.save();
+    res.send({ message: "Payment method successfully removed" });
+});
+
+
+router.get("/wallet", auth, async (req, res) => {
+    const user = await User.findById(req.user.id);
+    if (user) return res.send(user.wallet);
+    return res.status(404).send({ error: "User not found" });
+});
+
+
+router.post("/wallet-recharge", auth, async (req, res) => {
+
+    const user = await User.findById(req.user.id);
+    const reason = {
+        description: "Wallet Recharge",
+        id: `${req.user.id}`
+    }
+
+    const transaction = await user.chargeFromPrimaryMethod("Wallet Recharge", req.body.amount, reason);
+
+    if (transaction.status_code == 2) {
+
+        let { prepaidBalance, debt } = user.wallet;
+
+        // If user has debts it will be recovered here
+        if (debt > 0) {
+            if (transaction.amount.value + prepaidBalance >= debt) {
+                prepaidBalance = prepaidBalance + transaction.amount.value - debt;
+                debt = 0;
+            }
+            else {
+                prepaidBalance = 0;
+                debt = debt - (transaction.amount.value + transaction.amount.value);
+            }
+        }
+        // If there is no debts we will add the whole amount to the balance
+        else {
+            debt = 0;
+            prepaidBalance = prepaidBalance + transaction.amount.value;
+        }
+
+        user.wallet.prepaidBalance = prepaidBalance;
+        user.wallet.debt = debt;
+        user.save();
+        return res.status(200).send({ message: "Recharge successfull", wallet: user.wallet });
+    }
+    return res.status(400).send({ message: "Recharge failed" });
 });
 
 router.post("/charge", async (req, res) => {
