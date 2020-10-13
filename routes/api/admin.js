@@ -39,4 +39,17 @@ router.get('/ownerdetails/:id', async (req, res) => {
   }
 });
 
+//router.post("/delete", auth, owner, async (req, res) => {
+router.post("/delete", async (req, res) => {
+    await User.deleteOne(req.body.id)
+        .then(owner => {
+            console.log(owner)
+            res.status(200).json({ 'owners': 'User deleted successfully' });
+        })
+        .catch(err => {
+            console.log("deleted")
+            res.status(400).send('Deleting user failed');
+        });
+});
+
 module.exports = router;
