@@ -64,6 +64,8 @@ const userSchema = new mongoose.Schema({
   phoneNumber: {
     type: String,
   },
+  busNo: {
+    type: String,
   wallet: {
     prepaidBalance: { type: Number, default: 0 },
     debt: { type: Number, default: 0 },
@@ -101,14 +103,17 @@ userSchema.pre('save', function (next) {
 });
 
 userSchema.methods.generateAuthToken = function () {
-  const { _id, userRole, name, email, image } = this;
+  const { _id, userRole, name, email, image, phoneNumber, ownerMeta } = this;
   const token = jwt.sign({
     id: _id,
     isAdmin: userRole.isAdmin,
     isOwner: userRole.isOwner,
     name,
     email,
-    image
+    image,
+    phoneNumber,
+    ownerMeta,
+
   }, process.env.JWT_PRIVATE_KEY);
   return token;
 };
