@@ -25,21 +25,22 @@ const busesSchema = new mongoose.Schema({
     },
     isReserveEnable: {
         type: Boolean,
-        required: true,
+        default: false,
+        //required: true,
     },
     reserveRoute: {
         forward: {
             forwardStartPoint: { type: String },
-            forwardDepartTime: { type: String }  //time is wrong input type
+            forwardDepartTime: { type: String }  
         },
         backward: {
             backwardStartPoint: { type: String },
-            backwardDepartTime: { type: String }  //time is wrong input type
+            backwardDepartTime: { type: String }  
         },
     },
     noOfReservations: {
         type: Number,
-        required:true,
+        //required:true,
     },
     personals: {
         owner: {
